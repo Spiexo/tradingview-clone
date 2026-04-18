@@ -16,6 +16,10 @@ export interface Asset {
   changePercent: number;
 }
 
+export interface User {
+  id: string;
+  email: string | undefined;
+}
 export interface WatchlistItem {
   id: string;
   user_id: string;
