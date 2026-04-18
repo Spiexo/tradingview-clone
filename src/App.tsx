@@ -5,11 +5,12 @@ import { Topbar } from './components/layout/Topbar';
 import { WatchlistPanel } from './components/watchlist/WatchlistPanel';
 import { CandlestickChart } from './components/chart/CandlestickChart';
 import { ChartToolbar } from './components/chart/ChartToolbar';
-import { mockOHLCVData, mockWatchlist } from './data/mockData';
+import { mockBTCOHLCV } from './data/mockOHLCV';
+import { mockAssets } from './data/mockWatchlist';
 
 const App: React.FC = () => {
   // Use the first asset as the active one
-  const activeAsset = mockWatchlist[0];
+  const activeAsset = mockAssets[0];
 
   return (
     <MainLayout>
@@ -19,12 +20,12 @@ const App: React.FC = () => {
         <div className="flex-1 flex flex-col min-w-0">
           <ChartToolbar />
           <div className="flex-1 bg-[#131722] relative">
-            <CandlestickChart data={mockOHLCVData} />
+            <CandlestickChart data={mockBTCOHLCV} />
           </div>
         </div>
 
         {/* Watchlist Sidebar */}
-        <WatchlistPanel assets={mockWatchlist} />
+        <WatchlistPanel assets={mockAssets} />
       </div>
     </MainLayout>
   );

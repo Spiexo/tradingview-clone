@@ -1,4 +1,4 @@
-export interface OHLCV {
+export interface OHLCVData {
   time: string;
   open: number;
   high: number;
