@@ -1,5 +1,5 @@
 import React from 'react';
-import type { OHLCV } from '../../types';
+import type { OHLCVData } from '../../types';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -11,10 +11,10 @@ import {
 } from 'recharts';
 
 interface CandlestickChartProps {
-  data: OHLCV[];
+  data: OHLCVData[];
 }
 
-const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: OHLCV }[] }) => {
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: OHLCVData }[] }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (

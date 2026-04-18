@@ -1,6 +1,6 @@
-import type { OHLCV, Asset } from '../types';
+import type { OHLCVData, Asset } from '../types';
 
-export const mockOHLCVData: OHLCV[] = [
+export const mockOHLCVData: OHLCVData[] = [
   { time: '2023-10-01', open: 26000, high: 27000, low: 25500, close: 26500, volume: 1000 },
   { time: '2023-10-02', open: 26500, high: 28000, low: 26000, close: 27500, volume: 1200 },
   { time: '2023-10-03', open: 27500, high: 27800, low: 27000, close: 27200, volume: 800 },
@@ -19,9 +19,9 @@ export const mockOHLCVData: OHLCV[] = [
 ];
 
 export const mockWatchlist: Asset[] = [
-  { symbol: 'BTC/USD', name: 'Bitcoin', price: 33200.50, change: 450.25, changePercent: 1.38 },
-  { symbol: 'ETH/USD', name: 'Ethereum', price: 1850.75, change: -12.30, changePercent: -0.66 },
-  { symbol: 'AAPL', name: 'Apple Inc.', price: 175.20, change: 2.45, changePercent: 1.42 },
-  { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 450.15, change: 15.60, changePercent: 3.59 },
-  { symbol: 'SPY', name: 'SPDR S&P 500 ETF', price: 435.80, change: -1.20, changePercent: -0.27 },
+  { symbol: 'BTC/USD', name: 'Bitcoin', type: 'crypto', price: 33200.50, change: 450.25, changePercent: 1.38 },
+  { symbol: 'ETH/USD', name: 'Ethereum', type: 'crypto', price: 1850.75, change: -12.30, changePercent: -0.66 },
+  { symbol: 'AAPL', name: 'Apple Inc.', type: 'stock', price: 175.20, change: 2.45, changePercent: 1.42 },
+  { symbol: 'NVDA', name: 'NVIDIA Corp.', type: 'stock', price: 450.15, change: 15.60, changePercent: 3.59 },
+  { symbol: 'SPY', name: 'SPDR S&P 500 ETF', type: 'stock', price: 435.80, change: -1.20, changePercent: -0.27 },
 ];
