@@ -1,14 +1,12 @@
 import React from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import type { Asset, Timeframe } from '../../types';
+import type { Asset } from '../../types';
 
 interface MainLayoutProps {
   children: React.ReactNode;
   rightPanel?: React.ReactNode;
   asset: Asset;
-  activeTimeframe: Timeframe;
-  onTimeframeChange: (timeframe: Timeframe) => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -20,11 +18,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     <div className="flex h-screen w-full bg-gray-950 text-gray-300 overflow-hidden">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <Topbar
-          asset={asset}
-        />
+        <Topbar asset={asset} />
         <div className="flex-1 flex overflow-hidden">
-          <main className="flex-1 min-w-0 relative">
+          <main className="flex-1 min-w-0 relative flex flex-col">
             {children}
           </main>
           {rightPanel && (
