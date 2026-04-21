@@ -17,7 +17,12 @@ const App: React.FC = () => {
   return (
     <MainLayout
       asset={activeAsset}
-      rightPanel={<WatchlistPanel assets={mockAssets} />}
+      rightPanel={
+        <WatchlistPanel
+          assets={mockAssets}
+          activeSymbol={activeAsset.symbol}
+        />
+      }
     >
       <ChartToolbar
         activeTimeframe={activeTimeframe}
