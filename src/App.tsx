@@ -22,7 +22,10 @@ const App: React.FC = () => {
       rightPanel={<WatchlistPanel assets={mockAssets} />}
     >
       <div className="flex-1 flex flex-col h-full min-w-0">
-        <ChartToolbar />
+        <ChartToolbar
+          activeTimeframe={activeTimeframe}
+          onTimeframeChange={setActiveTimeframe}
+        />
         <div className="flex-1 bg-gray-950 relative">
           <CandlestickChart data={mockBTCOHLCV} />
         </div>

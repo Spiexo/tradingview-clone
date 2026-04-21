@@ -1,15 +1,11 @@
 import React from 'react';
-import type { Asset, Timeframe } from '../../types';
+import type { Asset } from '../../types';
 
 interface TopbarProps {
   asset: Asset;
-  activeTimeframe: Timeframe;
-  onTimeframeChange: (timeframe: Timeframe) => void;
 }
 
-const TIMEFRAMES: Timeframe[] = ['1m', '5m', '15m', '1h', '4h', '1D', '1W'];
-
-export const Topbar: React.FC<TopbarProps> = ({ asset, activeTimeframe, onTimeframeChange }) => {
+export const Topbar: React.FC<TopbarProps> = ({ asset }) => {
   const isPositive = asset.change >= 0;
 
   return (
@@ -30,21 +26,8 @@ export const Topbar: React.FC<TopbarProps> = ({ asset, activeTimeframe, onTimefr
         </span>
       </div>
 
-      {/* Right: Timeframe selector */}
-      <div className="flex items-center gap-1">
-        {TIMEFRAMES.map((tf) => (
-          <button
-            key={tf}
-            onClick={() => onTimeframeChange(tf)}
-            className={`px-2 py-1 text-xs rounded transition-colors ${
-              activeTimeframe === tf
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-            }`}
-          >
-            {tf}
-          </button>
-        ))}
+      {/* Right: Empty for now or search/user info */}
+      <div className="flex items-center gap-4">
       </div>
     </header>
   );

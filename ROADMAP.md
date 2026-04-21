@@ -30,7 +30,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 >              les couleurs bull/bear sont correctes.
 
 - [x] Composant CandlestickChart avec Recharts + mock data BTC
-- [ ] ChartToolbar (timeframes, indicateurs à venir)
+- [x] ChartToolbar (timeframes, indicateurs à venir)
 - [ ] Intégration dans MainLayout
 - [ ] Validation étape 2 : graphique visible, timeframes fonctionnels
 
