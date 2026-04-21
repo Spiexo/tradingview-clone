@@ -41,7 +41,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Objectif : panel droit avec liste d'assets, sélection change le graphique.
 > Validation : cliquer un asset dans la watchlist met à jour le graphique.
 
-- [ ] Composant WatchlistItem
+- [x] Composant WatchlistItem
 - [ ] Composant WatchlistPanel avec mock data
 - [ ] Connexion watchlist → graphique (state lifting ou context)
 - [ ] Validation étape 3 : navigation entre assets fonctionnelle
