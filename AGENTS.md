@@ -130,11 +130,46 @@ export const supabase = createClient(
 )
 ```
 
-### Database schema
-- `profiles` — linked to auth.users, stores display name and avatar
-- `watchlist` — stores user's favorite assets (user_id, symbol, name, type)
-- `drawings` — stores chart drawings (user_id, symbol, timeframe, data JSON)
-- `alerts` — stores price alerts (user_id, symbol, target_price, condition)
+### Database schema détaillé
+
+**profiles**
+| colonne | type | description |
+|---|---|---|
+| id | uuid | lié à auth.users |
+| display_name | text | nom affiché |
+| avatar_url | text | url avatar |
+
+**watchlist**
+| colonne | type | description |
+|---|---|---|
+| id | uuid | primary key |
+| user_id | uuid | lié à auth.users |
+| symbol | text | ex: BTC, AAPL |
+| name | text | ex: Bitcoin, Apple |
+| type | text | 'crypto' ou 'stock' |
+
+**drawings**
+| colonne | type | description |
+|---|---|---|
+| id | uuid | primary key |
+| user_id | uuid | lié à auth.users |
+| symbol | text | asset concerné |
+| timeframe | text | ex: 1h, 1D |
+| data | jsonb | données du dessin |
+
+**alerts**
+| colonne | type | description |
+|---|---|---|
+| id | uuid | primary key |
+| user_id | uuid | lié à auth.users |
+| symbol | text | asset concerné |
+| target_price | numeric | prix cible |
+| condition | text | 'above' ou 'below' |
+
+### Règles d'accès
+- RLS activé sur toutes les tables
+- Toujours utiliser `supabase.auth.getUser()` avant toute opération
+- Toujours filtrer par `user_id` dans les requêtes
 
 ### Auth rules
 - All Supabase data operations must check that the user is authenticated first
