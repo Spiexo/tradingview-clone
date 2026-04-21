@@ -15,8 +15,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   rightPanel,
   asset,
-  activeTimeframe,
-  onTimeframeChange
 }) => {
   return (
     <div className="flex h-screen w-full bg-gray-950 text-gray-300 overflow-hidden">
@@ -24,8 +22,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar
           asset={asset}
-          activeTimeframe={activeTimeframe}
-          onTimeframeChange={onTimeframeChange}
         />
         <div className="flex-1 flex overflow-hidden">
           <main className="flex-1 min-w-0 relative">
