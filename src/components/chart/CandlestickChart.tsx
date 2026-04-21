@@ -104,6 +104,13 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({ data }) => {
     isPositive: d.close >= d.open,
   }));
 
+  // Calculate domain manually to ensure all wicks are visible
+  const allValues = data.flatMap((d) => [d.high, d.low]);
+  const minPrice = data.length > 0 ? Math.min(...allValues) : 0;
+  const maxPrice = data.length > 0 ? Math.max(...allValues) : 100;
+  const priceRange = maxPrice - minPrice || 1;
+  const domain = [minPrice - priceRange * 0.05, maxPrice + priceRange * 0.05];
+
   // Colors from AGENTS.md / Tailwind
   const GREEN = '#4ade80'; // green-400
   const RED = '#f87171';   // red-400
@@ -129,11 +136,16 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({ data }) => {
           />
           <YAxis
             orientation="right"
-            domain={['auto', 'auto']}
+            domain={domain}
             axisLine={false}
             tickLine={false}
             tick={{ fill: '#6b7280', fontSize: 11 }} // gray-500
-            tickFormatter={(value: number) => value.toLocaleString()}
+            tickFormatter={(value: number) =>
+              value.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }
           />
           <Tooltip
             content={<CustomTooltip />}
@@ -144,6 +156,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({ data }) => {
             dataKey="body"
             shape={<Candlestick />}
             barSize={10}
+            isAnimationActive={false}
           >
             {formattedData.map((entry, index) => (
               <Cell

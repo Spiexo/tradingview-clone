@@ -31,8 +31,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 
 - [x] Composant CandlestickChart avec Recharts + mock data BTC
 - [x] ChartToolbar (timeframes, indicateurs à venir)
-- [ ] Intégration dans MainLayout
-- [ ] Validation étape 2 : graphique visible, timeframes fonctionnels
+- [x] Intégration dans MainLayout
+- [x] Validation étape 2 : graphique visible, timeframes fonctionnels
+      <!-- Validation report: Candlestick chart integrated into MainLayout with ChartToolbar. Chart scaling fixed and visible. Watchlist panel styled according to AGENTS.md. -->
 
 ---
 
