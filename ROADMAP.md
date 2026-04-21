@@ -18,8 +18,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 - [x] Création des mock data (src/data/)
 - [x] Setup Supabase client + useAuth hook
 - [x] Layout principal (Sidebar + Topbar + MainLayout)
-- [ ] Validation étape 1 : vérifier que npm run dev compile sans erreur 
+- [x] Validation étape 1 : vérifier que npm run dev compile sans erreur
       et que le layout s'affiche correctement
+      <!-- Validation report: npm run dev works, layout (Sidebar, Topbar, MainLayout) renders as expected. -->
 
 ---
 
@@ -28,7 +29,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : le graphique s'affiche, les timeframes changent, 
 >              les couleurs bull/bear sont correctes.
 
-- [ ] Composant CandlestickChart avec Recharts + mock data BTC
+- [x] Composant CandlestickChart avec Recharts + mock data BTC
 - [ ] ChartToolbar (timeframes, indicateurs à venir)
 - [ ] Intégration dans MainLayout
 - [ ] Validation étape 2 : graphique visible, timeframes fonctionnels

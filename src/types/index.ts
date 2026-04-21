@@ -16,13 +16,13 @@ export interface Asset {
   changePercent: number;
 }
 
-<<<<<<< HEAD
-=======
 export interface User {
   id: string;
   email: string | undefined;
+  display_name?: string;
+  avatar_url?: string;
 }
->>>>>>> 652d2ef933e6d675c95611d6329bcb1417222fcb
+
 export interface WatchlistItem {
   id: string;
   user_id: string;
@@ -45,13 +45,6 @@ export interface Alert {
   symbol: string;
   target_price: number;
   condition: 'above' | 'below';
-}
-
-export interface User {
-  id: string;
-  email: string;
-  display_name: string;
-  avatar_url: string;
 }
 
 export type Timeframe = '1m' | '5m' | '15m' | '1h' | '4h' | '1D' | '1W';
