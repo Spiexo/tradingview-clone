@@ -43,8 +43,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 
 - [x] Composant WatchlistItem
 - [x] Composant WatchlistPanel avec mock data
-- [ ] Connexion watchlist → graphique (state lifting ou context)
-- [ ] Validation étape 3 : navigation entre assets fonctionnelle
+- [x] Connexion watchlist → graphique (state lifting ou context)
+- [x] Validation étape 3 : navigation entre assets fonctionnelle
+      <!-- Validation report: Asset selection in WatchlistPanel successfully updates the activeAsset state in App.tsx. The Topbar and CandlestickChart respond to this state change, updating the displayed symbol, price, and chart data. Verified with Playwright. -->
 
 ---
 
