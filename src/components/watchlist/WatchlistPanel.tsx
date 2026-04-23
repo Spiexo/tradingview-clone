@@ -2,17 +2,24 @@ import React from 'react';
 import type { Asset } from '../../types';
 import { WatchlistItem } from './WatchlistItem';
 import { Search, Plus } from 'lucide-react';
+import { Spinner } from '../ui/Spinner';
 
 interface WatchlistPanelProps {
   assets: Asset[];
   activeSymbol?: string;
+  isLoading?: boolean;
   onAssetSelect?: (asset: Asset) => void;
+  onAdd?: () => void;
+  onRemove?: (symbol: string) => void;
 }
 
 export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
   assets,
   activeSymbol,
+  isLoading = false,
   onAssetSelect,
+  onAdd,
+  onRemove,
 }) => {
   return (
     <div className="flex flex-col h-full bg-gray-900">
@@ -21,7 +28,11 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
           Watchlist
         </h2>
         <div className="flex gap-2 text-gray-400">
-          <button className="hover:text-white cursor-pointer transition-colors">
+          <button
+            onClick={onAdd}
+            className="hover:text-white cursor-pointer transition-colors"
+            title="Add current asset to watchlist"
+          >
             <Plus size={18} />
           </button>
           <button className="hover:text-white cursor-pointer transition-colors">
@@ -39,15 +50,26 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-        {assets.map((asset) => (
-          <WatchlistItem
-            key={asset.symbol}
-            asset={asset}
-            isActive={asset.symbol === activeSymbol}
-            onSelect={onAssetSelect}
-          />
-        ))}
+      <div className="flex-1 overflow-y-auto scrollbar-hide relative">
+        {isLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Spinner size="sm" />
+          </div>
+        ) : assets.length > 0 ? (
+          assets.map((asset) => (
+            <WatchlistItem
+              key={asset.symbol}
+              asset={asset}
+              isActive={asset.symbol === activeSymbol}
+              onSelect={onAssetSelect}
+              onRemove={onRemove}
+            />
+          ))
+        ) : (
+          <div className="p-8 text-center text-gray-500 text-sm">
+            Watchlist is empty.
+          </div>
+        )}
       </div>
     </div>
   );
