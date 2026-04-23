@@ -9,8 +9,7 @@ import { Spinner } from './components/ui/Spinner';
 import { Button } from './components/ui/Button';
 import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
-import { mockBTCOHLCV } from './data/mockOHLCV';
-import { mockOHLCVData } from './data/mockData';
+import { useCoinGecko } from './hooks/useCoinGecko';
 import { mockAssets } from './data/mockWatchlist';
 import type { Timeframe, Asset } from './types';
 
@@ -26,6 +25,12 @@ const App: React.FC = () => {
   const [activeTimeframe, setActiveTimeframe] = useState<Timeframe>('1h');
   const [activeAsset, setActiveAsset] = useState<Asset>(mockAssets[0]);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const {
+    data: chartData,
+    loading: chartLoading,
+    error: chartError
+  } = useCoinGecko(activeAsset.symbol, activeTimeframe);
 
   const watchlistAssets = useMemo(() => {
     // Merge database watchlist with mockAssets to get current price data
@@ -66,8 +71,6 @@ const App: React.FC = () => {
       await removeFromWatchlist(item.id);
     }
   };
-
-  const chartData = activeAsset.symbol === 'BTC' ? mockBTCOHLCV : mockOHLCVData;
 
   if (authLoading) {
     return (
@@ -119,8 +122,24 @@ const App: React.FC = () => {
             activeTimeframe={activeTimeframe}
             onTimeframeChange={setActiveTimeframe}
           />
-          <div className="flex-1 bg-gray-950 relative">
-            <CandlestickChart data={chartData} />
+          <div className="flex-1 bg-gray-950 relative flex flex-col min-h-0">
+            {chartError ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <div className="bg-red-950/20 border border-red-900/50 rounded-lg p-6 max-w-sm">
+                  <p className="text-red-400 font-medium mb-2">Failed to load chart data</p>
+                  <p className="text-gray-400 text-sm">{chartError}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 relative">
+                {chartLoading && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/50 backdrop-blur-sm">
+                    <Spinner size="lg" />
+                  </div>
+                )}
+                <CandlestickChart data={chartData} />
+              </div>
+            )}
           </div>
         </MainLayout>
       )}
