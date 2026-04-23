@@ -78,7 +78,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Objectif : remplacer mock data par CoinGecko API.
 > Validation : prix réels affichés, graphique avec vraies données OHLCV.
 
-- [ ] Hook useCoinGecko (fetch OHLCV par symbol + timeframe)
+- [x] Hook useCoinGecko (fetch OHLCV par symbol + timeframe)
 - [ ] Remplacement mock data dans CandlestickChart
 - [ ] Remplacement mock data dans WatchlistPanel
 - [ ] Validation étape 6 : données réelles affichées sans erreur
