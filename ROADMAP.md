@@ -81,8 +81,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 - [x] Hook useCoinGecko (fetch OHLCV par symbol + timeframe)
 - [x] Remplacement mock data dans CandlestickChart
 - [x] Remplacement mock data dans WatchlistPanel
+- [x] Amélioration Watchlist (icones favoris + tri)
 - [x] Validation étape 6 : données réelles affichées sans erreur
-      <!-- Validation report: Real-time price fetching for the watchlist and OHLCV chart data integration are complete. The usePrices hook handles periodic updates for watchlist items, and the useCoinGecko hook provides live market data for the chart. All mock data dependencies in the main dashboard have been replaced with live API calls. -->
+      <!-- Validation report: Step 6 complete. Integrated real-time price data from CoinGecko for both the chart and the watchlist. Improved WatchlistPanel with favorite icons (Star) and a sorting mechanism (Filter) to easily manage and view favorites alongside other assets. Verified real-time synchronization between UI and API. -->
 
 ---
 

@@ -14,6 +14,8 @@ export interface Asset {
   price: number;
   change: number;
   changePercent: number;
+  isFavorite?: boolean;
+  watchlistId?: string;
 }
 
 export interface User {

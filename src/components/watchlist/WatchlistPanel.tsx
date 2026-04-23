@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Asset } from '../../types';
 import { WatchlistItem } from './WatchlistItem';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Filter } from 'lucide-react';
 import { Spinner } from '../ui/Spinner';
 
 interface WatchlistPanelProps {
@@ -9,8 +9,7 @@ interface WatchlistPanelProps {
   activeSymbol?: string;
   isLoading?: boolean;
   onAssetSelect?: (asset: Asset) => void;
-  onAdd?: () => void;
-  onRemove?: (symbol: string) => void;
+  onToggleFavorite?: (asset: Asset) => void;
 }
 
 export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
@@ -18,9 +17,18 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
   activeSymbol,
   isLoading = false,
   onAssetSelect,
-  onAdd,
-  onRemove,
+  onToggleFavorite,
 }) => {
+  const [sortByFavorite, setSortByFavorite] = useState(false);
+
+  const sortedAssets = useMemo(() => {
+    if (!sortByFavorite) return assets;
+    return [...assets].sort((a, b) => {
+      if (a.isFavorite === b.isFavorite) return 0;
+      return a.isFavorite ? -1 : 1;
+    });
+  }, [assets, sortByFavorite]);
+
   return (
     <div className="flex flex-col h-full bg-gray-900">
       <div className="p-4 border-b border-gray-800 flex items-center justify-between">
@@ -29,11 +37,13 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
         </h2>
         <div className="flex gap-2 text-gray-400">
           <button
-            onClick={onAdd}
-            className="hover:text-white cursor-pointer transition-colors"
-            title="Add current asset to watchlist"
+            onClick={() => setSortByFavorite(!sortByFavorite)}
+            className={`cursor-pointer transition-colors ${
+              sortByFavorite ? 'text-blue-500' : 'hover:text-white'
+            }`}
+            title="Sort by favorites"
           >
-            <Plus size={18} />
+            <Filter size={18} />
           </button>
           <button className="hover:text-white cursor-pointer transition-colors">
             <Search size={18} />
@@ -55,14 +65,14 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
           <div className="absolute inset-0 flex items-center justify-center">
             <Spinner size="sm" />
           </div>
-        ) : assets.length > 0 ? (
-          assets.map((asset) => (
+        ) : sortedAssets.length > 0 ? (
+          sortedAssets.map((asset) => (
             <WatchlistItem
               key={asset.symbol}
               asset={asset}
               isActive={asset.symbol === activeSymbol}
               onSelect={onAssetSelect}
-              onRemove={onRemove}
+              onToggleFavorite={onToggleFavorite}
             />
           ))
         ) : (

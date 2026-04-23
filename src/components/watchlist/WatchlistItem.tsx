@@ -1,19 +1,19 @@
 import React from 'react';
 import type { Asset } from '../../types';
-import { X } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 interface WatchlistItemProps {
   asset: Asset;
   isActive?: boolean;
   onSelect?: (asset: Asset) => void;
-  onRemove?: (symbol: string) => void;
+  onToggleFavorite?: (asset: Asset) => void;
 }
 
 export const WatchlistItem: React.FC<WatchlistItemProps> = ({
   asset,
   isActive = false,
   onSelect,
-  onRemove,
+  onToggleFavorite,
 }) => {
   const isPositive = asset.change >= 0;
 
@@ -25,17 +25,23 @@ export const WatchlistItem: React.FC<WatchlistItemProps> = ({
       onClick={() => onSelect?.(asset)}
     >
       <div className="flex items-center gap-3">
-        {onRemove && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove(asset.symbol);
-            }}
-            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded text-gray-500 hover:text-red-400 transition-all"
-          >
-            <X size={14} />
-          </button>
-        )}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite?.(asset);
+          }}
+          className={`p-1 hover:bg-gray-700 rounded transition-all ${
+            asset.isFavorite
+              ? 'text-yellow-500'
+              : 'opacity-0 group-hover:opacity-100 text-gray-500 hover:text-yellow-500'
+          }`}
+          title={asset.isFavorite ? 'Remove from watchlist' : 'Add to watchlist'}
+        >
+          <Star
+            size={14}
+            fill={asset.isFavorite ? 'currentColor' : 'transparent'}
+          />
+        </button>
         <div className="flex flex-col">
           <span className="font-bold text-gray-200">{asset.symbol}</span>
           <span className="text-xs text-gray-400 truncate w-24">{asset.name}</span>

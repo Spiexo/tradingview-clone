@@ -33,44 +33,45 @@ const App: React.FC = () => {
     error: chartError
   } = useCoinGecko(activeAsset.symbol, activeTimeframe);
 
-  const watchlistSymbols = useMemo(() => dbWatchlist.map((item) => item.symbol), [dbWatchlist]);
-  const { prices: realTimePrices, loading: pricesLoading } = usePrices(watchlistSymbols);
+  const allSymbols = useMemo(() => {
+    const symbols = new Set(mockAssets.map((a) => a.symbol));
+    dbWatchlist.forEach((item) => symbols.add(item.symbol));
+    return Array.from(symbols);
+  }, [dbWatchlist]);
+
+  const { prices: realTimePrices, loading: pricesLoading } = usePrices(allSymbols);
 
   const watchlistAssets = useMemo(() => {
-    return dbWatchlist.map((item) => {
-      const realTimeData = realTimePrices[item.symbol];
-      const mockAsset = mockAssets.find((a) => a.symbol === item.symbol);
+    const combinedSymbols = new Set(mockAssets.map((a) => a.symbol));
+    dbWatchlist.forEach((item) => combinedSymbols.add(item.symbol));
+
+    return Array.from(combinedSymbols).map((symbol) => {
+      const realTimeData = realTimePrices[symbol];
+      const mockAsset = mockAssets.find((a) => a.symbol === symbol);
+      const watchlistItem = dbWatchlist.find((item) => item.symbol === symbol);
 
       return {
-        symbol: item.symbol,
-        name: item.name,
-        type: item.type,
+        symbol,
+        name: watchlistItem?.name ?? mockAsset?.name ?? symbol,
+        type: watchlistItem?.type ?? mockAsset?.type ?? 'crypto',
         price: realTimeData?.price ?? mockAsset?.price ?? 0,
         change: ((realTimeData?.price ?? 0) * (realTimeData?.change24h ?? 0)) / 100 || mockAsset?.change || 0,
         changePercent: realTimeData?.change24h ?? mockAsset?.changePercent ?? 0,
+        isFavorite: !!watchlistItem,
+        watchlistId: watchlistItem?.id,
       } as Asset;
     });
   }, [dbWatchlist, realTimePrices]);
 
-  const handleAddToWatchlist = async () => {
-    if (!activeAsset) return;
-
-    // Avoid duplicates
-    if (dbWatchlist.some((item) => item.symbol === activeAsset.symbol)) {
-      return;
-    }
-
-    await addToWatchlist({
-      symbol: activeAsset.symbol,
-      name: activeAsset.name,
-      type: activeAsset.type,
-    });
-  };
-
-  const handleRemoveFromWatchlist = async (symbol: string) => {
-    const item = dbWatchlist.find((i) => i.symbol === symbol);
-    if (item) {
-      await removeFromWatchlist(item.id);
+  const handleToggleFavorite = async (asset: Asset) => {
+    if (asset.isFavorite && asset.watchlistId) {
+      await removeFromWatchlist(asset.watchlistId);
+    } else {
+      await addToWatchlist({
+        symbol: asset.symbol,
+        name: asset.name,
+        type: asset.type,
+      });
     }
   };
 
@@ -115,8 +116,7 @@ const App: React.FC = () => {
               activeSymbol={activeAsset.symbol}
               isLoading={watchlistLoading || pricesLoading}
               onAssetSelect={setActiveAsset}
-              onAdd={handleAddToWatchlist}
-              onRemove={handleRemoveFromWatchlist}
+              onToggleFavorite={handleToggleFavorite}
             />
           }
         >
