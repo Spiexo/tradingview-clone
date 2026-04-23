@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import './index.css';
 import { MainLayout } from './components/layout/MainLayout';
 import { WatchlistPanel } from './components/watchlist/WatchlistPanel';
@@ -8,20 +8,68 @@ import { AuthModal } from './components/auth/AuthModal';
 import { Spinner } from './components/ui/Spinner';
 import { Button } from './components/ui/Button';
 import { useAuth } from './hooks/useAuth';
+import { useWatchlist } from './hooks/useWatchlist';
 import { mockBTCOHLCV } from './data/mockOHLCV';
 import { mockOHLCVData } from './data/mockData';
 import { mockAssets } from './data/mockWatchlist';
 import type { Timeframe, Asset } from './types';
 
 const App: React.FC = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const {
+    watchlist: dbWatchlist,
+    loading: watchlistLoading,
+    addToWatchlist,
+    removeFromWatchlist
+  } = useWatchlist();
+
   const [activeTimeframe, setActiveTimeframe] = useState<Timeframe>('1h');
   const [activeAsset, setActiveAsset] = useState<Asset>(mockAssets[0]);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
+  const watchlistAssets = useMemo(() => {
+    // Merge database watchlist with mockAssets to get current price data
+    return dbWatchlist.map((item) => {
+      const mockAsset = mockAssets.find((a) => a.symbol === item.symbol);
+      if (mockAsset) return mockAsset;
+
+      // Fallback for assets not in mockAssets
+      return {
+        symbol: item.symbol,
+        name: item.name,
+        type: item.type,
+        price: 0,
+        change: 0,
+        changePercent: 0,
+      } as Asset;
+    });
+  }, [dbWatchlist]);
+
+  const handleAddToWatchlist = async () => {
+    if (!activeAsset) return;
+
+    // Avoid duplicates
+    if (dbWatchlist.some((item) => item.symbol === activeAsset.symbol)) {
+      return;
+    }
+
+    await addToWatchlist({
+      symbol: activeAsset.symbol,
+      name: activeAsset.name,
+      type: activeAsset.type,
+    });
+  };
+
+  const handleRemoveFromWatchlist = async (symbol: string) => {
+    const item = dbWatchlist.find((i) => i.symbol === symbol);
+    if (item) {
+      await removeFromWatchlist(item.id);
+    }
+  };
+
   const chartData = activeAsset.symbol === 'BTC' ? mockBTCOHLCV : mockOHLCVData;
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-950">
         <Spinner size="lg" />
@@ -58,9 +106,12 @@ const App: React.FC = () => {
           onSignOut={signOut}
           rightPanel={
             <WatchlistPanel
-              assets={mockAssets}
+              assets={watchlistAssets}
               activeSymbol={activeAsset.symbol}
+              isLoading={watchlistLoading}
               onAssetSelect={setActiveAsset}
+              onAdd={handleAddToWatchlist}
+              onRemove={handleRemoveFromWatchlist}
             />
           }
         >

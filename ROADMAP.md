@@ -68,8 +68,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 
 - [x] Table watchlist Supabase + RLS
 - [x] Hook useWatchlist (fetch, add, remove)
-- [ ] Synchronisation watchlist UI ↔ Supabase
-- [ ] Validation étape 5 : données persistées en base
+- [x] Synchronisation watchlist UI ↔ Supabase
+- [x] Validation étape 5 : données persistées en base
+      <!-- Validation report: Watchlist synchronization between UI and Supabase is fully functional. Users can add the currently active asset to their watchlist and remove existing items. The UI correctly handles loading states and displays the persisted data upon refresh. Build and type-check passed. -->
 
 ---
 
