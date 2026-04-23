@@ -14,7 +14,7 @@ import { mockAssets } from './data/mockWatchlist';
 import type { Timeframe, Asset } from './types';
 
 const App: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [activeTimeframe, setActiveTimeframe] = useState<Timeframe>('1h');
   const [activeAsset, setActiveAsset] = useState<Asset>(mockAssets[0]);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -53,7 +53,9 @@ const App: React.FC = () => {
       ) : (
         <MainLayout
           asset={activeAsset}
+          user={user}
           onOpenAuth={() => setIsAuthModalOpen(true)}
+          onSignOut={signOut}
           rightPanel={
             <WatchlistPanel
               assets={mockAssets}
