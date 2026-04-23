@@ -67,7 +67,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : les favoris persistent après refresh et reconnexion.
 
 - [x] Table watchlist Supabase + RLS
-- [ ] Hook useWatchlist (fetch, add, remove)
+- [x] Hook useWatchlist (fetch, add, remove)
 - [ ] Synchronisation watchlist UI ↔ Supabase
 - [ ] Validation étape 5 : données persistées en base
 
