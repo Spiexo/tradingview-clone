@@ -55,7 +55,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 >              se déconnecter. Session persistée au refresh.
 
 - [x] Composant AuthModal (login + register)
-- [ ] Protection des routes (redirect si non connecté)
+- [x] Protection des routes (redirect si non connecté)
 - [ ] Affichage user connecté dans Topbar
 - [ ] Validation étape 4 : flux auth complet fonctionnel
 
