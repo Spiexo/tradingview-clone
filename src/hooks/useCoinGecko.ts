@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { OHLCVData, Timeframe } from '../types';
 
-const SYMBOL_TO_ID: Record<string, string> = {
+export const SYMBOL_TO_ID: Record<string, string> = {
   BTC: 'bitcoin',
   ETH: 'ethereum',
   SOL: 'solana',

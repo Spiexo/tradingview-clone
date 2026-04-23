@@ -10,6 +10,7 @@ import { Button } from './components/ui/Button';
 import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
 import { useCoinGecko } from './hooks/useCoinGecko';
+import { usePrices } from './hooks/usePrices';
 import { mockAssets } from './data/mockWatchlist';
 import type { Timeframe, Asset } from './types';
 
@@ -32,23 +33,24 @@ const App: React.FC = () => {
     error: chartError
   } = useCoinGecko(activeAsset.symbol, activeTimeframe);
 
-  const watchlistAssets = useMemo(() => {
-    // Merge database watchlist with mockAssets to get current price data
-    return dbWatchlist.map((item) => {
-      const mockAsset = mockAssets.find((a) => a.symbol === item.symbol);
-      if (mockAsset) return mockAsset;
+  const watchlistSymbols = useMemo(() => dbWatchlist.map((item) => item.symbol), [dbWatchlist]);
+  const { prices: realTimePrices, loading: pricesLoading } = usePrices(watchlistSymbols);
 
-      // Fallback for assets not in mockAssets
+  const watchlistAssets = useMemo(() => {
+    return dbWatchlist.map((item) => {
+      const realTimeData = realTimePrices[item.symbol];
+      const mockAsset = mockAssets.find((a) => a.symbol === item.symbol);
+
       return {
         symbol: item.symbol,
         name: item.name,
         type: item.type,
-        price: 0,
-        change: 0,
-        changePercent: 0,
+        price: realTimeData?.price ?? mockAsset?.price ?? 0,
+        change: ((realTimeData?.price ?? 0) * (realTimeData?.change24h ?? 0)) / 100 || mockAsset?.change || 0,
+        changePercent: realTimeData?.change24h ?? mockAsset?.changePercent ?? 0,
       } as Asset;
     });
-  }, [dbWatchlist]);
+  }, [dbWatchlist, realTimePrices]);
 
   const handleAddToWatchlist = async () => {
     if (!activeAsset) return;
@@ -111,7 +113,7 @@ const App: React.FC = () => {
             <WatchlistPanel
               assets={watchlistAssets}
               activeSymbol={activeAsset.symbol}
-              isLoading={watchlistLoading}
+              isLoading={watchlistLoading || pricesLoading}
               onAssetSelect={setActiveAsset}
               onAdd={handleAddToWatchlist}
               onRemove={handleRemoveFromWatchlist}
