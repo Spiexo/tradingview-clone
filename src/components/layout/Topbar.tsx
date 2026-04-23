@@ -1,11 +1,13 @@
 import React from 'react';
+import { Button } from '../ui/Button';
 import type { Asset } from '../../types';
 
 interface TopbarProps {
   asset: Asset;
+  onOpenAuth?: () => void;
 }
 
-export const Topbar: React.FC<TopbarProps> = ({ asset }) => {
+export const Topbar: React.FC<TopbarProps> = ({ asset, onOpenAuth }) => {
   const isPositive = asset.change >= 0;
 
   return (
@@ -26,8 +28,16 @@ export const Topbar: React.FC<TopbarProps> = ({ asset }) => {
         </span>
       </div>
 
-      {/* Right: Empty for now or search/user info */}
+      {/* Right: User info / Auth */}
       <div className="flex items-center gap-4">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onOpenAuth}
+          className="cursor-pointer"
+        >
+          Sign In
+        </Button>
       </div>
     </header>
   );

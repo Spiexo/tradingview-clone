@@ -54,7 +54,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : un utilisateur peut s'inscrire, se connecter, 
 >              se déconnecter. Session persistée au refresh.
 
-- [ ] Composant AuthModal (login + register)
+- [x] Composant AuthModal (login + register)
 - [ ] Protection des routes (redirect si non connecté)
 - [ ] Affichage user connecté dans Topbar
 - [ ] Validation étape 4 : flux auth complet fonctionnel
