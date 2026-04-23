@@ -56,8 +56,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 
 - [x] Composant AuthModal (login + register)
 - [x] Protection des routes (redirect si non connecté)
-- [ ] Affichage user connecté dans Topbar
-- [ ] Validation étape 4 : flux auth complet fonctionnel
+- [x] Affichage user connecté dans Topbar
+- [x] Validation étape 4 : flux auth complet fonctionnel
+      <!-- Validation report: Authentication flow is fully functional. Users can sign in and sign out. The Topbar correctly displays the logged-in user's email and provides a sign-out button. The application correctly toggles between the landing page and the dashboard based on auth state. Build and type-check passed. -->
 
 ---
 
