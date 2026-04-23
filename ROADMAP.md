@@ -66,7 +66,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Objectif : watchlist et favoris sauvegardés dans Supabase.
 > Validation : les favoris persistent après refresh et reconnexion.
 
-- [ ] Table watchlist Supabase + RLS
+- [x] Table watchlist Supabase + RLS
 - [ ] Hook useWatchlist (fetch, add, remove)
 - [ ] Synchronisation watchlist UI ↔ Supabase
 - [ ] Validation étape 5 : données persistées en base
