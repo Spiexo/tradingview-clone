@@ -9,7 +9,7 @@ import { Spinner } from './components/ui/Spinner';
 import { Button } from './components/ui/Button';
 import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
-import { useCoinGecko } from './hooks/useCoinGecko';
+import { useCoinGecko, useCoinGeckoMarkets, SYMBOL_TO_ID } from './hooks/useCoinGecko';
 import { mockAssets } from './data/mockWatchlist';
 import type { Timeframe, Asset } from './types';
 
@@ -32,9 +32,36 @@ const App: React.FC = () => {
     error: chartError
   } = useCoinGecko(activeAsset.symbol, activeTimeframe);
 
+  const coinIds = useMemo(() => {
+    const ids = new Set<string>();
+    dbWatchlist.forEach((item) => {
+      const id = SYMBOL_TO_ID[item.symbol.toUpperCase()];
+      if (id) ids.add(id);
+    });
+    const activeId = SYMBOL_TO_ID[activeAsset.symbol.toUpperCase()];
+    if (activeId) ids.add(activeId);
+    return Array.from(ids);
+  }, [dbWatchlist, activeAsset.symbol]);
+
+  const { data: marketData } = useCoinGeckoMarkets(coinIds);
+
   const watchlistAssets = useMemo(() => {
-    // Merge database watchlist with mockAssets to get current price data
+    // Merge database watchlist with real-time data or mockAssets
     return dbWatchlist.map((item) => {
+      const coinId = SYMBOL_TO_ID[item.symbol.toUpperCase()];
+      const liveData = coinId ? marketData[coinId] : null;
+
+      if (liveData) {
+        return {
+          symbol: item.symbol,
+          name: item.name,
+          type: item.type,
+          price: liveData.current_price,
+          change: liveData.price_change_24h,
+          changePercent: liveData.price_change_percentage_24h,
+        } as Asset;
+      }
+
       const mockAsset = mockAssets.find((a) => a.symbol === item.symbol);
       if (mockAsset) return mockAsset;
 
@@ -48,7 +75,22 @@ const App: React.FC = () => {
         changePercent: 0,
       } as Asset;
     });
-  }, [dbWatchlist]);
+  }, [dbWatchlist, marketData]);
+
+  const displayActiveAsset = useMemo(() => {
+    const coinId = SYMBOL_TO_ID[activeAsset.symbol.toUpperCase()];
+    const liveData = coinId ? marketData[coinId] : null;
+
+    if (liveData) {
+      return {
+        ...activeAsset,
+        price: liveData.current_price,
+        change: liveData.price_change_24h,
+        changePercent: liveData.price_change_percentage_24h,
+      };
+    }
+    return activeAsset;
+  }, [activeAsset, marketData]);
 
   const handleAddToWatchlist = async () => {
     if (!activeAsset) return;
@@ -103,7 +145,7 @@ const App: React.FC = () => {
         </div>
       ) : (
         <MainLayout
-          asset={activeAsset}
+          asset={displayActiveAsset}
           user={user}
           onOpenAuth={() => setIsAuthModalOpen(true)}
           onSignOut={signOut}
