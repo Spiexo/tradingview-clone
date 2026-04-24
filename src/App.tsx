@@ -9,8 +9,7 @@ import { Spinner } from './components/ui/Spinner';
 import { Button } from './components/ui/Button';
 import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
-import { mockBTCOHLCV } from './data/mockOHLCV';
-import { mockOHLCVData } from './data/mockData';
+import { useCoinGecko } from './hooks/useCoinGecko';
 import { mockAssets } from './data/mockWatchlist';
 import type { Timeframe, Asset } from './types';
 
@@ -26,6 +25,12 @@ const App: React.FC = () => {
   const [activeTimeframe, setActiveTimeframe] = useState<Timeframe>('1h');
   const [activeAsset, setActiveAsset] = useState<Asset>(mockAssets[0]);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const {
+    data: chartData,
+    loading: chartLoading,
+    error: chartError
+  } = useCoinGecko(activeAsset.symbol, activeTimeframe);
 
   const watchlistAssets = useMemo(() => {
     // Merge database watchlist with mockAssets to get current price data
@@ -66,8 +71,6 @@ const App: React.FC = () => {
       await removeFromWatchlist(item.id);
     }
   };
-
-  const chartData = activeAsset.symbol === 'BTC' ? mockBTCOHLCV : mockOHLCVData;
 
   if (authLoading) {
     return (
@@ -120,7 +123,18 @@ const App: React.FC = () => {
             onTimeframeChange={setActiveTimeframe}
           />
           <div className="flex-1 bg-gray-950 relative">
-            <CandlestickChart data={chartData} />
+            {chartLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/50">
+                <Spinner size="lg" />
+              </div>
+            )}
+            {chartError ? (
+              <div className="absolute inset-0 flex items-center justify-center text-red-400 p-4 text-center">
+                <p>{chartError}</p>
+              </div>
+            ) : (
+              <CandlestickChart data={chartData} />
+            )}
           </div>
         </MainLayout>
       )}

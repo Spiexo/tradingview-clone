@@ -79,7 +79,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : prix réels affichés, graphique avec vraies données OHLCV.
 
 - [x] Hook useCoinGecko (fetch OHLCV par symbol + timeframe)
-- [ ] Remplacement mock data dans CandlestickChart
+- [x] Remplacement mock data dans CandlestickChart
 - [ ] Remplacement mock data dans WatchlistPanel
 - [ ] Validation étape 6 : données réelles affichées sans erreur
 
