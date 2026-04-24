@@ -92,8 +92,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 
 - [x] Système de drawings sur le chart (lignes de tendance)
 - [x] Sauvegarde drawings dans Supabase
-- [ ] Composant AlertPanel + table alerts Supabase
-- [ ] Validation étape 7 : drawings et alertes persistés
+- [x] Composant AlertPanel + table alerts Supabase
+- [x] Validation étape 7 : drawings et alertes persistés
+      <!-- Validation report: Trend lines drawings are persisted in Supabase per symbol and timeframe. AlertPanel is implemented allowing users to set 'above' or 'below' price targets. Sidebar now supports switching between Watchlist and Alert panels. All data is persisted in Supabase with RLS. Build and type-check passed. -->
 
 ---
 

@@ -1,7 +1,14 @@
 import React from 'react';
 import { BarChart2, Star, Bell, Settings } from 'lucide-react';
 
-export const Sidebar: React.FC = () => {
+export type RightPanelType = 'watchlist' | 'alerts' | null;
+
+interface SidebarProps {
+  activePanel: RightPanelType;
+  onPanelChange: (panel: RightPanelType) => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) => {
   return (
     <aside className="w-[56px] flex flex-col items-center py-4 bg-gray-900 border-r border-gray-800 h-full">
       <div className="mb-8">
@@ -14,10 +21,20 @@ export const Sidebar: React.FC = () => {
         <button className="text-blue-500 cursor-pointer">
           <BarChart2 size={20} />
         </button>
-        <button className="text-gray-400 hover:text-white cursor-pointer transition-colors">
+        <button
+          onClick={() => onPanelChange(activePanel === 'watchlist' ? null : 'watchlist')}
+          className={`cursor-pointer transition-colors ${
+            activePanel === 'watchlist' ? 'text-blue-500' : 'text-gray-400 hover:text-white'
+          }`}
+        >
           <Star size={20} />
         </button>
-        <button className="text-gray-400 hover:text-white cursor-pointer transition-colors">
+        <button
+          onClick={() => onPanelChange(activePanel === 'alerts' ? null : 'alerts')}
+          className={`cursor-pointer transition-colors ${
+            activePanel === 'alerts' ? 'text-blue-500' : 'text-gray-400 hover:text-white'
+          }`}
+        >
           <Bell size={20} />
         </button>
       </nav>

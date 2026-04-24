@@ -1,11 +1,13 @@
 import React from 'react';
-import { Sidebar } from './Sidebar';
+import { Sidebar, type RightPanelType } from './Sidebar';
 import { Topbar } from './Topbar';
 import type { Asset, User } from '../../types';
 
 interface MainLayoutProps {
   children: React.ReactNode;
   rightPanel?: React.ReactNode;
+  activePanel: RightPanelType;
+  onPanelChange: (panel: RightPanelType) => void;
   asset: Asset;
   user: User | null;
   onOpenAuth?: () => void;
@@ -15,6 +17,8 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   rightPanel,
+  activePanel,
+  onPanelChange,
   asset,
   user,
   onOpenAuth,
@@ -22,7 +26,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   return (
     <div className="flex h-screen w-full bg-gray-950 text-gray-300 overflow-hidden">
-      <Sidebar />
+      <Sidebar activePanel={activePanel} onPanelChange={onPanelChange} />
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar
           asset={asset}

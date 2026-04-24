@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import './index.css';
 import { MainLayout } from './components/layout/MainLayout';
 import { WatchlistPanel } from './components/watchlist/WatchlistPanel';
+import { AlertPanel } from './components/alerts/AlertPanel';
 import { CandlestickChart } from './components/chart/CandlestickChart';
 import { ChartToolbar } from './components/chart/ChartToolbar';
 import { DrawingToolbar } from './components/chart/DrawingToolbar';
@@ -12,6 +13,7 @@ import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
 import { useDrawings } from './hooks/useDrawings';
 import { useCoinGecko, useCoinGeckoMarkets, SYMBOL_TO_ID } from './hooks/useCoinGecko';
+import type { RightPanelType } from './components/layout/Sidebar';
 import { mockAssets } from './data/mockWatchlist';
 import type { Timeframe, Asset, DrawingTool } from './types';
 
@@ -28,6 +30,7 @@ const App: React.FC = () => {
   const [activeAsset, setActiveAsset] = useState<Asset>(mockAssets[0]);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTool, setActiveTool] = useState<DrawingTool>('cursor');
+  const [activePanel, setActivePanel] = useState<RightPanelType>('watchlist');
 
   const {
     drawings,
@@ -166,15 +169,21 @@ const App: React.FC = () => {
           user={user}
           onOpenAuth={() => setIsAuthModalOpen(true)}
           onSignOut={signOut}
+          activePanel={activePanel}
+          onPanelChange={setActivePanel}
           rightPanel={
-            <WatchlistPanel
-              assets={watchlistAssets}
-              activeSymbol={activeAsset.symbol}
-              isLoading={watchlistLoading}
-              onAssetSelect={setActiveAsset}
-              onAdd={handleAddToWatchlist}
-              onRemove={handleRemoveFromWatchlist}
-            />
+            activePanel === 'watchlist' ? (
+              <WatchlistPanel
+                assets={watchlistAssets}
+                activeSymbol={activeAsset.symbol}
+                isLoading={watchlistLoading}
+                onAssetSelect={setActiveAsset}
+                onAdd={handleAddToWatchlist}
+                onRemove={handleRemoveFromWatchlist}
+              />
+            ) : activePanel === 'alerts' ? (
+              <AlertPanel activeAsset={displayActiveAsset} />
+            ) : null
           }
         >
           <ChartToolbar
