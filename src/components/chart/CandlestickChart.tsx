@@ -1,5 +1,5 @@
-import React from 'react';
-import type { OHLCVData } from '../../types';
+import React, { useState, useMemo } from 'react';
+import type { OHLCVData, Drawing, DrawingTool } from '../../types';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -13,6 +13,15 @@ import {
 
 interface CandlestickChartProps {
   data: OHLCVData[];
+  activeTool?: DrawingTool;
+  drawings?: Drawing[];
+  onDraw?: (drawing: Omit<Drawing, 'id' | 'user_id' | 'symbol' | 'timeframe'>) => void;
+}
+
+interface ChartMouseEvent {
+  activeLabel?: string | number;
+  chartY?: number;
+  height?: number;
 }
 
 interface CustomTooltipProps {
@@ -95,32 +104,78 @@ const Candlestick: React.FC<CandlestickProps> = (props) => {
   );
 };
 
-export const CandlestickChart: React.FC<CandlestickChartProps> = ({ data }) => {
-  const formattedData = data.map((d) => ({
+export const CandlestickChart: React.FC<CandlestickChartProps> = ({
+  data,
+  activeTool = 'cursor',
+  drawings = [],
+  onDraw,
+}) => {
+  const [drawingStart, setDrawingStart] = useState<{ x: string; y: number } | null>(null);
+  const [drawingEnd, setDrawingEnd] = useState<{ x: string; y: number } | null>(null);
+
+  const formattedData = useMemo(() => data.map((d) => ({
     ...d,
-    // Bar expects a numeric value or an array [min, max]
-    // We use [min, max] for the body
     body: [Math.min(d.open, d.close), Math.max(d.open, d.close)],
     isPositive: d.close >= d.open,
-  }));
+  })), [data]);
 
-  // Calculate domain manually to ensure all wicks are visible
-  const allValues = data.flatMap((d) => [d.high, d.low]);
-  const minPrice = data.length > 0 ? Math.min(...allValues) : 0;
-  const maxPrice = data.length > 0 ? Math.max(...allValues) : 100;
-  const priceRange = maxPrice - minPrice || 1;
-  const domain = [minPrice - priceRange * 0.05, maxPrice + priceRange * 0.05];
+  const { domain, minPrice, maxPrice } = useMemo(() => {
+    const allValues = data.flatMap((d) => [d.high, d.low]);
+    const min = data.length > 0 ? Math.min(...allValues) : 0;
+    const max = data.length > 0 ? Math.max(...allValues) : 100;
+    const range = max - min || 1;
+    const d = [min - range * 0.05, max + range * 0.05];
+    return { domain: d, minPrice: d[0], maxPrice: d[1] };
+  }, [data]);
 
-  // Colors from AGENTS.md / Tailwind
-  const GREEN = '#4ade80'; // green-400
-  const RED = '#f87171';   // red-400
+  const GREEN = '#4ade80';
+  const RED = '#f87171';
+
+  const mapChartYToPrice = (y: number, height: number) => {
+    const marginTop = 20;
+    const marginBottom = 20;
+    const chartHeight = height - marginTop - marginBottom;
+    const relativeY = y - marginTop;
+    const priceRange = maxPrice - minPrice;
+    return maxPrice - (relativeY / chartHeight) * priceRange;
+  };
 
   return (
-    <div className="w-full h-full p-2 bg-gray-950">
+    <div className="w-full h-full p-2 bg-gray-950 select-none">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={formattedData}
           margin={{ top: 20, right: 60, left: 0, bottom: 20 }}
+          onMouseDown={(e: ChartMouseEvent) => {
+            if (activeTool !== 'trendline' || !e || !e.activeLabel || e.chartY === undefined || e.height === undefined) return;
+            const label = e.activeLabel.toString();
+            const price = mapChartYToPrice(e.chartY, e.height);
+            setDrawingStart({ x: label, y: price });
+            setDrawingEnd({ x: label, y: price });
+          }}
+          onMouseMove={(e: ChartMouseEvent) => {
+            if (!drawingStart || !e || !e.activeLabel || e.chartY === undefined || e.height === undefined) return;
+            const label = e.activeLabel.toString();
+            const price = mapChartYToPrice(e.chartY, e.height);
+            setDrawingEnd({ x: label, y: price });
+          }}
+          onMouseUp={() => {
+            if (drawingStart && drawingEnd && onDraw) {
+              if (drawingStart.x !== drawingEnd.x || drawingStart.y !== drawingEnd.y) {
+                onDraw({
+                  type: 'trendline',
+                  data: {
+                    startX: drawingStart.x,
+                    startY: drawingStart.y,
+                    endX: drawingEnd.x,
+                    endY: drawingEnd.y,
+                  },
+                });
+              }
+            }
+            setDrawingStart(null);
+            setDrawingEnd(null);
+          }}
         >
           <CartesianGrid
             vertical={false}
@@ -165,8 +220,96 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({ data }) => {
               />
             ))}
           </Bar>
+
+          <DrawingLayer
+            drawings={drawings}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            data={data}
+            currentDrawing={drawingStart && drawingEnd ? {
+              type: 'trendline',
+              data: {
+                startX: drawingStart.x,
+                startY: drawingStart.y,
+                endX: drawingEnd.x,
+                endY: drawingEnd.y
+              }
+            } : null}
+          />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
+  );
+};
+
+interface DrawingLayerProps {
+  drawings: Drawing[];
+  minPrice: number;
+  maxPrice: number;
+  data: OHLCVData[];
+  currentDrawing: {
+    type: DrawingTool;
+    data: {
+      startX: string;
+      startY: number;
+      endX: string;
+      endY: number;
+    };
+  } | null;
+  // Recharts injected props
+  viewBox?: { x: number; y: number; width: number; height: number };
+  xAxisMap?: Record<number, { scale: (v: any) => number; bandwidth?: number }>;
+  yAxisMap?: Record<number, { scale: (v: any) => number }>;
+}
+
+const DrawingLayer: React.FC<DrawingLayerProps> = ({
+  drawings,
+  data,
+  currentDrawing,
+  viewBox,
+  xAxisMap,
+  yAxisMap,
+}) => {
+  if (!viewBox || !xAxisMap || !yAxisMap) return null;
+
+  const xAxis = xAxisMap[0];
+  const yAxis = yAxisMap[0];
+
+  const getX = (time: string) => {
+    const index = data.findIndex((d) => d.time === time);
+    if (index === -1) return 0;
+    return xAxis.scale(index) + (xAxis.bandwidth || 0) / 2;
+  };
+
+  const getY = (price: number) => {
+    return yAxis.scale(price);
+  };
+
+  const renderDrawing = (drawing: Drawing | Exclude<DrawingLayerProps['currentDrawing'], null>, key: string, isPreview = false) => {
+    const x1 = getX(drawing.data.startX);
+    const y1 = getY(drawing.data.startY);
+    const x2 = getX(drawing.data.endX);
+    const y2 = getY(drawing.data.endY);
+
+    return (
+      <line
+        key={key}
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
+        stroke={isPreview ? '#3b82f6' : '#60a5fa'}
+        strokeWidth={isPreview ? 1.5 : 2}
+        strokeDasharray={isPreview ? '5,5' : 'none'}
+        className="pointer-events-none"
+      />
+    );
+  };
+
+  return (
+    <g>
+      {drawings.map((d) => renderDrawing(d, d.id))}
+      {currentDrawing && renderDrawing(currentDrawing, 'preview', true)}
+    </g>
   );
 };

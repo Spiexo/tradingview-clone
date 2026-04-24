@@ -90,7 +90,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Objectif : tracer des lignes sur le graphique et créer des alertes de prix.
 > Validation : un drawing est sauvegardé et rechargé après refresh.
 
-- [ ] Système de drawings sur le chart (lignes de tendance)
+- [x] Système de drawings sur le chart (lignes de tendance)
 - [ ] Sauvegarde drawings dans Supabase
 - [ ] Composant AlertPanel + table alerts Supabase
 - [ ] Validation étape 7 : drawings et alertes persistés
