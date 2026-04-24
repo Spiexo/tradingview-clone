@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { OHLCVData, Timeframe } from '../types';
 
-const SYMBOL_TO_ID: Record<string, string> = {
+export const SYMBOL_TO_ID: Record<string, string> = {
   BTC: 'bitcoin',
   ETH: 'ethereum',
   SOL: 'solana',
@@ -25,6 +25,21 @@ const TIMEFRAME_TO_DAYS: Record<Timeframe, string> = {
 
 interface UseCoinGeckoResult {
   data: OHLCVData[];
+  loading: boolean;
+  error: string | null;
+}
+
+export interface MarketData {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+  price_change_24h: number;
+  price_change_percentage_24h: number;
+}
+
+interface UseCoinGeckoMarketsResult {
+  data: Record<string, MarketData>;
   loading: boolean;
   error: string | null;
 }
@@ -111,6 +126,78 @@ export const useCoinGecko = (symbol: string, timeframe: Timeframe): UseCoinGecko
       isMounted = false;
     };
   }, [symbol, timeframe]);
+
+  return { data, loading, error };
+};
+
+/**
+ * Hook to fetch real-time market data for a list of coin IDs
+ * @param ids Array of coin IDs (e.g., ['bitcoin', 'ethereum'])
+ */
+export const useCoinGeckoMarkets = (ids: string[]): UseCoinGeckoMarketsResult => {
+  const [data, setData] = useState<Record<string, MarketData>>({});
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (ids.length === 0) return;
+
+    let isMounted = true;
+    const fetchMarkets = async () => {
+      if (isMounted) {
+        setLoading(true);
+        setError(null);
+      }
+
+      try {
+        const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids.join(',')}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          if (response.status === 429) {
+            throw new Error('CoinGecko API rate limit reached. Please try again later.');
+          }
+          throw new Error('Failed to fetch market data from CoinGecko');
+        }
+
+        const rawData = await response.json();
+
+        if (!isMounted) return;
+
+        const formattedData: Record<string, MarketData> = {};
+        rawData.forEach((item: any) => {
+          formattedData[item.id] = {
+            id: item.id,
+            symbol: item.symbol.toUpperCase(),
+            name: item.name,
+            current_price: item.current_price,
+            price_change_24h: item.price_change_24h,
+            price_change_percentage_24h: item.price_change_percentage_24h,
+          };
+        });
+
+        setData(formattedData);
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchMarkets();
+
+    // Set up polling every 60 seconds
+    const interval = setInterval(fetchMarkets, 60000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [ids.join(',')]);
 
   return { data, loading, error };
 };
