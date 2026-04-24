@@ -10,9 +10,10 @@ import { Spinner } from './components/ui/Spinner';
 import { Button } from './components/ui/Button';
 import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
+import { useDrawings } from './hooks/useDrawings';
 import { useCoinGecko, useCoinGeckoMarkets, SYMBOL_TO_ID } from './hooks/useCoinGecko';
 import { mockAssets } from './data/mockWatchlist';
-import type { Timeframe, Asset, Drawing, DrawingTool } from './types';
+import type { Timeframe, Asset, DrawingTool } from './types';
 
 const App: React.FC = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -27,7 +28,12 @@ const App: React.FC = () => {
   const [activeAsset, setActiveAsset] = useState<Asset>(mockAssets[0]);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTool, setActiveTool] = useState<DrawingTool>('cursor');
-  const [drawings, setDrawings] = useState<Drawing[]>([]);
+
+  const {
+    drawings,
+    addDrawing,
+    clearDrawings
+  } = useDrawings(activeAsset.symbol, activeTimeframe);
 
   const {
     data: chartData,
@@ -117,21 +123,12 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAddDrawing = (drawing: Omit<Drawing, 'id' | 'user_id' | 'symbol' | 'timeframe'>) => {
-    if (!user) return;
-
-    const newDrawing: Drawing = {
-      ...drawing,
-      id: crypto.randomUUID(),
-      user_id: user.id,
-      symbol: activeAsset.symbol,
-      timeframe: activeTimeframe,
-    };
-    setDrawings((prev) => [...prev, newDrawing]);
+  const handleAddDrawing = async (drawing: Parameters<typeof addDrawing>[0]) => {
+    await addDrawing(drawing);
   };
 
-  const handleClearDrawings = () => {
-    setDrawings((prev) => prev.filter(d => d.symbol !== activeAsset.symbol || d.timeframe !== activeTimeframe));
+  const handleClearDrawings = async () => {
+    await clearDrawings();
   };
 
   if (authLoading) {
@@ -204,7 +201,7 @@ const App: React.FC = () => {
                 <CandlestickChart
                   data={chartData}
                   activeTool={activeTool}
-                  drawings={drawings.filter(d => d.symbol === activeAsset.symbol && d.timeframe === activeTimeframe)}
+                  drawings={drawings}
                   onDraw={handleAddDrawing}
                 />
               )}

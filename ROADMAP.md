@@ -91,7 +91,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : un drawing est sauvegardé et rechargé après refresh.
 
 - [x] Système de drawings sur le chart (lignes de tendance)
-- [ ] Sauvegarde drawings dans Supabase
+- [x] Sauvegarde drawings dans Supabase
 - [ ] Composant AlertPanel + table alerts Supabase
 - [ ] Validation étape 7 : drawings et alertes persistés
 
