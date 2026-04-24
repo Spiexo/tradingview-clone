@@ -4,6 +4,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import { WatchlistPanel } from './components/watchlist/WatchlistPanel';
 import { CandlestickChart } from './components/chart/CandlestickChart';
 import { ChartToolbar } from './components/chart/ChartToolbar';
+import { DrawingToolbar } from './components/chart/DrawingToolbar';
 import { AuthModal } from './components/auth/AuthModal';
 import { Spinner } from './components/ui/Spinner';
 import { Button } from './components/ui/Button';
@@ -11,7 +12,7 @@ import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
 import { useCoinGecko, useCoinGeckoMarkets, SYMBOL_TO_ID } from './hooks/useCoinGecko';
 import { mockAssets } from './data/mockWatchlist';
-import type { Timeframe, Asset } from './types';
+import type { Timeframe, Asset, Drawing, DrawingTool } from './types';
 
 const App: React.FC = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -25,6 +26,8 @@ const App: React.FC = () => {
   const [activeTimeframe, setActiveTimeframe] = useState<Timeframe>('1h');
   const [activeAsset, setActiveAsset] = useState<Asset>(mockAssets[0]);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [activeTool, setActiveTool] = useState<DrawingTool>('cursor');
+  const [drawings, setDrawings] = useState<Drawing[]>([]);
 
   const {
     data: chartData,
@@ -114,6 +117,23 @@ const App: React.FC = () => {
     }
   };
 
+  const handleAddDrawing = (drawing: Omit<Drawing, 'id' | 'user_id' | 'symbol' | 'timeframe'>) => {
+    if (!user) return;
+
+    const newDrawing: Drawing = {
+      ...drawing,
+      id: crypto.randomUUID(),
+      user_id: user.id,
+      symbol: activeAsset.symbol,
+      timeframe: activeTimeframe,
+    };
+    setDrawings((prev) => [...prev, newDrawing]);
+  };
+
+  const handleClearDrawings = () => {
+    setDrawings((prev) => prev.filter(d => d.symbol !== activeAsset.symbol || d.timeframe !== activeTimeframe));
+  };
+
   if (authLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-950">
@@ -164,19 +184,31 @@ const App: React.FC = () => {
             activeTimeframe={activeTimeframe}
             onTimeframeChange={setActiveTimeframe}
           />
-          <div className="flex-1 bg-gray-950 relative">
-            {chartLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/50">
-                <Spinner size="lg" />
-              </div>
-            )}
-            {chartError ? (
-              <div className="absolute inset-0 flex items-center justify-center text-red-400 p-4 text-center">
-                <p>{chartError}</p>
-              </div>
-            ) : (
-              <CandlestickChart data={chartData} />
-            )}
+          <div className="flex-1 flex overflow-hidden">
+            <DrawingToolbar
+              activeTool={activeTool}
+              onToolChange={setActiveTool}
+              onClearAll={handleClearDrawings}
+            />
+            <div className="flex-1 bg-gray-950 relative">
+              {chartLoading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/50">
+                  <Spinner size="lg" />
+                </div>
+              )}
+              {chartError ? (
+                <div className="absolute inset-0 flex items-center justify-center text-red-400 p-4 text-center">
+                  <p>{chartError}</p>
+                </div>
+              ) : (
+                <CandlestickChart
+                  data={chartData}
+                  activeTool={activeTool}
+                  drawings={drawings.filter(d => d.symbol === activeAsset.symbol && d.timeframe === activeTimeframe)}
+                  onDraw={handleAddDrawing}
+                />
+              )}
+            </div>
           </div>
         </MainLayout>
       )}

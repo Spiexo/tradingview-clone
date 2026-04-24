@@ -31,12 +31,22 @@ export interface WatchlistItem {
   type: 'crypto' | 'stock';
 }
 
+export type DrawingTool = 'cursor' | 'trendline';
+
+export interface DrawingData {
+  startX: string;
+  startY: number;
+  endX: string;
+  endY: number;
+}
+
 export interface Drawing {
   id: string;
   user_id: string;
   symbol: string;
   timeframe: string;
-  data: object;
+  type: DrawingTool;
+  data: DrawingData;
 }
 
 export interface Alert {
