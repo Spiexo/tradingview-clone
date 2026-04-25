@@ -8,6 +8,7 @@ import { ChartToolbar } from './components/chart/ChartToolbar';
 import { DrawingToolbar } from './components/chart/DrawingToolbar';
 import { AuthModal } from './components/auth/AuthModal';
 import { Spinner } from './components/ui/Spinner';
+import { Skeleton } from './components/ui/Skeleton';
 import { Button } from './components/ui/Button';
 import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
@@ -55,7 +56,7 @@ const App: React.FC = () => {
     return Array.from(ids);
   }, [dbWatchlist, activeAsset.symbol]);
 
-  const { data: marketData } = useCoinGeckoMarkets(coinIds);
+  const { data: marketData, loading: marketLoading } = useCoinGeckoMarkets(coinIds);
 
   const watchlistAssets = useMemo(() => {
     // Merge database watchlist with real-time data or mockAssets
@@ -167,6 +168,7 @@ const App: React.FC = () => {
         <MainLayout
           asset={displayActiveAsset}
           user={user}
+          isLoading={marketLoading}
           onOpenAuth={() => setIsAuthModalOpen(true)}
           onSignOut={signOut}
           activePanel={activePanel}
@@ -176,7 +178,7 @@ const App: React.FC = () => {
               <WatchlistPanel
                 assets={watchlistAssets}
                 activeSymbol={activeAsset.symbol}
-                isLoading={watchlistLoading}
+                isLoading={watchlistLoading || marketLoading}
                 onAssetSelect={setActiveAsset}
                 onAdd={handleAddToWatchlist}
                 onRemove={handleRemoveFromWatchlist}
@@ -198,8 +200,11 @@ const App: React.FC = () => {
             />
             <div className="flex-1 bg-gray-950 relative">
               {chartLoading && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/50">
-                  <Spinner size="lg" />
+                <div className="absolute inset-0 z-10 p-4">
+                  <Skeleton className="w-full h-full rounded-none" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Spinner size="lg" />
+                  </div>
                 </div>
               )}
               {chartError ? (

@@ -104,7 +104,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 >              README complet.
 
 - [x] Responsive design (mobile + tablet)
-- [ ] Gestion des états de chargement (Spinner, Skeleton)
+- [x] Gestion des états de chargement (Spinner, Skeleton)
 - [ ] Gestion des erreurs (API down, auth failed)
 - [ ] README.md complet
 - [ ] Validation étape 8 : build de production sans erreur

@@ -1,10 +1,12 @@
 import React from 'react';
 import { Button } from '../ui/Button';
+import { Skeleton } from '../ui/Skeleton';
 import type { Asset, User } from '../../types';
 
 interface TopbarProps {
   asset: Asset;
   user: User | null;
+  isLoading?: boolean;
   onOpenAuth?: () => void;
   onSignOut?: () => void;
 }
@@ -12,6 +14,7 @@ interface TopbarProps {
 export const Topbar: React.FC<TopbarProps> = ({
   asset,
   user,
+  isLoading = false,
   onOpenAuth,
   onSignOut
 }) => {
@@ -27,12 +30,21 @@ export const Topbar: React.FC<TopbarProps> = ({
 
       {/* Center: Price + Change */}
       <div className="flex items-center gap-2 md:gap-3">
-        <span className={`font-semibold text-sm md:text-base ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-          {asset.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </span>
-        <span className={`text-[10px] md:text-sm ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-          {isPositive ? '+' : ''}{asset.changePercent.toFixed(2)}%
-        </span>
+        {isLoading ? (
+          <>
+            <Skeleton className="h-5 w-20 md:w-24" />
+            <Skeleton className="h-4 w-12 md:w-16" />
+          </>
+        ) : (
+          <>
+            <span className={`font-semibold text-sm md:text-base ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+              {asset.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span className={`text-[10px] md:text-sm ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+              {isPositive ? '+' : ''}{asset.changePercent.toFixed(2)}%
+            </span>
+          </>
+        )}
       </div>
 
       {/* Right: User info / Auth */}

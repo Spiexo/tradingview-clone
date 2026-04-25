@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Bell, Plus, X } from 'lucide-react';
 import { useAlerts } from '../../hooks/useAlerts';
 import { AlertItem } from './AlertItem';
-import { Spinner } from '../ui/Spinner';
+import { Skeleton } from '../ui/Skeleton';
 import { Button } from '../ui/Button';
 import type { Asset } from '../../types';
 
@@ -109,8 +109,19 @@ export const AlertPanel: React.FC<AlertPanelProps> = ({ activeAsset }) => {
 
       <div className="flex-1 overflow-y-auto scrollbar-hide relative">
         {loading ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Spinner size="sm" />
+          <div className="p-4 space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex flex-col gap-2 p-3 bg-gray-800/20 rounded border border-gray-800/50">
+                <div className="flex justify-between items-center">
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-4 w-4" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : alerts.length > 0 ? (
           <div className="flex flex-col">
