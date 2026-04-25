@@ -14,7 +14,7 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
   onClearAll,
 }) => {
   return (
-    <div className="w-12 border-r border-gray-800 bg-gray-950 flex flex-col items-center py-4 gap-4">
+    <div className="w-12 border-r border-gray-800 bg-gray-950 hidden md:flex flex-col items-center py-4 gap-4">
       <button
         onClick={() => onToolChange('cursor')}
         className={`p-2 rounded transition-colors ${

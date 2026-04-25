@@ -165,7 +165,7 @@ export const useCoinGeckoMarkets = (ids: string[]): UseCoinGeckoMarketsResult =>
         if (!isMounted) return;
 
         const formattedData: Record<string, MarketData> = {};
-        rawData.forEach((item: any) => {
+        rawData.forEach((item: MarketData) => {
           formattedData[item.id] = {
             id: item.id,
             symbol: item.symbol.toUpperCase(),

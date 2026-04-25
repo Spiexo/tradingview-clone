@@ -14,8 +14,8 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   onTimeframeChange,
 }) => {
   return (
-    <div className="h-10 flex items-center px-4 bg-gray-900 border-b border-gray-800 justify-between">
-      <div className="flex items-center gap-2">
+    <div className="h-10 flex items-center px-2 md:px-4 bg-gray-900 border-b border-gray-800 justify-between overflow-x-auto scrollbar-hide">
+      <div className="flex items-center gap-2 shrink-0">
         <div className="flex bg-gray-800 rounded p-0.5">
           {TIMEFRAMES.map((tf) => (
             <button
