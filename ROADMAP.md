@@ -103,7 +103,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : aucune erreur console, responsive mobile, 
 >              README complet.
 
-- [ ] Responsive design (mobile + tablet)
+- [x] Responsive design (mobile + tablet)
 - [ ] Gestion des états de chargement (Spinner, Skeleton)
 - [ ] Gestion des erreurs (API down, auth failed)
 - [ ] README.md complet

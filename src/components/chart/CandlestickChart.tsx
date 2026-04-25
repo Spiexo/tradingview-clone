@@ -258,8 +258,8 @@ interface DrawingLayerProps {
   } | null;
   // Recharts injected props
   viewBox?: { x: number; y: number; width: number; height: number };
-  xAxisMap?: Record<number, { scale: (v: any) => number; bandwidth?: number }>;
-  yAxisMap?: Record<number, { scale: (v: any) => number }>;
+  xAxisMap?: Record<number, { scale: (v: number | string) => number; bandwidth?: number }>;
+  yAxisMap?: Record<number, { scale: (v: number | string) => number }>;
 }
 
 const DrawingLayer: React.FC<DrawingLayerProps> = ({
