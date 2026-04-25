@@ -1,73 +1,84 @@
-# React + TypeScript + Vite
+# TradingView Clone
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A professional-grade trading dashboard clone built with React, TypeScript, and Tailwind CSS. This application features real-time cryptocurrency charts, interactive drawing tools, price alerts, and a personalized watchlist with Supabase integration.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Real-time Charts**: Interactive candlestick charts powered by Recharts and live market data from the CoinGecko API.
+- **Drawing Tools**: Technical analysis tools including trend lines that are persisted per asset and timeframe.
+- **Price Alerts**: Set 'above' or 'below' price targets for any asset, with real-time tracking and persistence.
+- **Personalized Watchlist**: Manage your favorite assets and track their performance in real-time.
+- **Secure Authentication**: Complete auth flow (sign up, login, session persistence) powered by Supabase Auth.
+- **Responsive Design**: Fully optimized for desktop, tablet, and mobile devices with a native-like experience.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 18, TypeScript, Vite 8
+- **Styling**: Tailwind CSS 4
+- **Charts**: Recharts
+- **Backend/Persistence**: Supabase (Auth, PostgreSQL, RLS)
+- **Icons**: Lucide React
 
-## Expanding the ESLint configuration
+## 📦 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js (v18+)
+- npm
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd tradingview-clone
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure Environment Variables:
+   Create a `.env` file in the root directory and add your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## 🏗️ Project Structure
+
+The project follows a modular and strict architectural pattern:
+
+```text
+src/
+├── components/
+│   ├── layout/        # Sidebar, Topbar, MainLayout
+│   ├── chart/         # CandlestickChart, ChartToolbar, DrawingToolbar
+│   ├── watchlist/     # WatchlistPanel, WatchlistItem
+│   ├── alerts/        # AlertPanel, AlertItem
+│   ├── auth/          # AuthModal
+│   └── ui/            # Reusable UI primitives (Button, Spinner, etc.)
+├── hooks/             # Custom React hooks for Auth, API, and Data persistence
+├── lib/               # Third-party library configurations (Supabase client)
+├── types/             # Centralized TypeScript interfaces and types
+├── data/              # Mock data and static configurations
+└── App.tsx            # Root application component and state orchestration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📜 Development Guidelines
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project adheres to strict coding standards defined in `AGENTS.md`, including:
+- **TypeScript**: No `any` type allowed, strict mode enabled.
+- **Styling**: Utility-first CSS using Tailwind 4 exclusively.
+- **Architecture**: One component per file, logic extracted to hooks.
+- **Database**: Row Level Security (RLS) enabled on all Supabase tables to ensure data privacy.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📄 License
+
+This project is licensed under the MIT License.
