@@ -2,7 +2,7 @@ import React from 'react';
 import type { Asset } from '../../types';
 import { WatchlistItem } from './WatchlistItem';
 import { Search, Plus } from 'lucide-react';
-import { Spinner } from '../ui/Spinner';
+import { Skeleton } from '../ui/Skeleton';
 
 interface WatchlistPanelProps {
   assets: Asset[];
@@ -52,8 +52,19 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
 
       <div className="flex-1 overflow-y-auto scrollbar-hide relative">
         {isLoading ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Spinner size="sm" />
+          <div className="p-2 space-y-1">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="flex justify-between items-center p-2">
+                <div className="flex flex-col gap-1">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <div className="flex gap-4">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : assets.length > 0 ? (
           assets.map((asset) => (

@@ -10,6 +10,7 @@ interface MainLayoutProps {
   onPanelChange: (panel: RightPanelType) => void;
   asset: Asset;
   user: User | null;
+  isLoading?: boolean;
   onOpenAuth?: () => void;
   onSignOut?: () => void;
 }
@@ -21,6 +22,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onPanelChange,
   asset,
   user,
+  isLoading = false,
   onOpenAuth,
   onSignOut,
 }) => {
@@ -31,6 +33,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <Topbar
           asset={asset}
           user={user}
+          isLoading={isLoading}
           onOpenAuth={onOpenAuth}
           onSignOut={onSignOut}
         />
