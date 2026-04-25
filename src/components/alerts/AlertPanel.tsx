@@ -3,6 +3,7 @@ import { Bell, Plus, X } from 'lucide-react';
 import { useAlerts } from '../../hooks/useAlerts';
 import { AlertItem } from './AlertItem';
 import { Skeleton } from '../ui/Skeleton';
+import { ErrorMessage } from '../ui/ErrorMessage';
 import { Button } from '../ui/Button';
 import type { Asset } from '../../types';
 
@@ -11,7 +12,7 @@ interface AlertPanelProps {
 }
 
 export const AlertPanel: React.FC<AlertPanelProps> = ({ activeAsset }) => {
-  const { alerts, loading, addAlert, removeAlert } = useAlerts();
+  const { alerts, loading, error, addAlert, removeAlert, refreshAlerts } = useAlerts();
   const [isAdding, setIsAdding] = useState(false);
   const [targetPrice, setTargetPrice] = useState(activeAsset.price.toString());
   const [condition, setCondition] = useState<'above' | 'below'>('above');
@@ -108,7 +109,13 @@ export const AlertPanel: React.FC<AlertPanelProps> = ({ activeAsset }) => {
       )}
 
       <div className="flex-1 overflow-y-auto scrollbar-hide relative">
-        {loading ? (
+        {error ? (
+          <ErrorMessage
+            message={error}
+            onRetry={refreshAlerts}
+            className="mt-8"
+          />
+        ) : loading ? (
           <div className="p-4 space-y-4">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex flex-col gap-2 p-3 bg-gray-800/20 rounded border border-gray-800/50">

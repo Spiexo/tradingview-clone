@@ -10,6 +10,7 @@ import { AuthModal } from './components/auth/AuthModal';
 import { Spinner } from './components/ui/Spinner';
 import { Skeleton } from './components/ui/Skeleton';
 import { Button } from './components/ui/Button';
+import { ErrorMessage } from './components/ui/ErrorMessage';
 import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
 import { useDrawings } from './hooks/useDrawings';
@@ -23,8 +24,10 @@ const App: React.FC = () => {
   const {
     watchlist: dbWatchlist,
     loading: watchlistLoading,
+    error: watchlistError,
     addToWatchlist,
-    removeFromWatchlist
+    removeFromWatchlist,
+    refreshWatchlist
   } = useWatchlist();
 
   const [activeTimeframe, setActiveTimeframe] = useState<Timeframe>('1h');
@@ -42,7 +45,8 @@ const App: React.FC = () => {
   const {
     data: chartData,
     loading: chartLoading,
-    error: chartError
+    error: chartError,
+    refresh: refreshChart
   } = useCoinGecko(activeAsset.symbol, activeTimeframe);
 
   const coinIds = useMemo(() => {
@@ -56,7 +60,12 @@ const App: React.FC = () => {
     return Array.from(ids);
   }, [dbWatchlist, activeAsset.symbol]);
 
-  const { data: marketData, loading: marketLoading } = useCoinGeckoMarkets(coinIds);
+  const {
+    data: marketData,
+    loading: marketLoading,
+    error: marketError,
+    refresh: refreshMarkets
+  } = useCoinGeckoMarkets(coinIds);
 
   const watchlistAssets = useMemo(() => {
     // Merge database watchlist with real-time data or mockAssets
@@ -182,6 +191,11 @@ const App: React.FC = () => {
                 onAssetSelect={setActiveAsset}
                 onAdd={handleAddToWatchlist}
                 onRemove={handleRemoveFromWatchlist}
+                error={watchlistError || marketError}
+                onRetry={() => {
+                  refreshWatchlist();
+                  refreshMarkets();
+                }}
               />
             ) : activePanel === 'alerts' ? (
               <AlertPanel activeAsset={displayActiveAsset} />
@@ -208,8 +222,11 @@ const App: React.FC = () => {
                 </div>
               )}
               {chartError ? (
-                <div className="absolute inset-0 flex items-center justify-center text-red-400 p-4 text-center">
-                  <p>{chartError}</p>
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-950 z-20">
+                  <ErrorMessage
+                    message={chartError}
+                    onRetry={refreshChart}
+                  />
                 </div>
               ) : (
                 <CandlestickChart
