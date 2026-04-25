@@ -3,6 +3,7 @@ import type { Asset } from '../../types';
 import { WatchlistItem } from './WatchlistItem';
 import { Search, Plus } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
+import { ErrorMessage } from '../ui/ErrorMessage';
 
 interface WatchlistPanelProps {
   assets: Asset[];
@@ -11,6 +12,8 @@ interface WatchlistPanelProps {
   onAssetSelect?: (asset: Asset) => void;
   onAdd?: () => void;
   onRemove?: (symbol: string) => void;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
@@ -20,6 +23,8 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
   onAssetSelect,
   onAdd,
   onRemove,
+  error = null,
+  onRetry,
 }) => {
   return (
     <div className="flex flex-col h-full bg-gray-900">
@@ -51,7 +56,13 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hide relative">
-        {isLoading ? (
+        {error ? (
+          <ErrorMessage
+            message={error}
+            onRetry={onRetry}
+            className="mt-8"
+          />
+        ) : isLoading ? (
           <div className="p-2 space-y-1">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="flex justify-between items-center p-2">

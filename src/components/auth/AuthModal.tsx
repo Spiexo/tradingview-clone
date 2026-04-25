@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, AlertCircle } from 'lucide-react';
+import { X, Mail, Lock } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { ErrorMessage } from '../ui/ErrorMessage';
 import { useAuth } from '../../hooks/useAuth';
 
 interface AuthModalProps {
@@ -65,10 +66,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded">
-              <AlertCircle size={16} />
-              <span>{error}</span>
-            </div>
+            <ErrorMessage
+              message={error}
+              title=""
+              showIcon={false}
+              className="p-3 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded space-y-0"
+            />
           )}
 
           <div className="space-y-2">
