@@ -120,11 +120,12 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : graphique candlestick affiché avec lightweight-charts, mêmes données
 > qu'avant, couleurs bull=vert/bear=rouge, resize correct, npm run build sans erreur.
 
-- [ ] Désinstaller recharts, installer lightweight-charts@4 (`npm uninstall recharts && npm install lightweight-charts@4`)
-- [ ] Ajouter l'interface LWC dans src/types/index.ts si manquante
-- [ ] Réécrire src/components/chart/CandlestickChart.tsx avec IChartApi (useRef container, createChart, candlestickSeries, ResizeObserver, cleanup on unmount)
-- [ ] Conserver les mêmes props du composant — aucun changement d'API externe
-- [ ] Validation étape 9 : npm run build sans erreur TypeScript, graphique visible avec les données existantes
+- [x] Désinstaller recharts, installer lightweight-charts@4 (`npm uninstall recharts && npm install lightweight-charts@4`)
+- [x] Ajouter l'interface LWC dans src/types/index.ts si manquante
+- [x] Réécrire src/components/chart/CandlestickChart.tsx avec IChartApi (useRef container, createChart, candlestickSeries, ResizeObserver, cleanup on unmount)
+- [x] Conserver les mêmes props du composant — aucun changement d'API externe
+- [x] Validation étape 9 : npm run build sans erreur TypeScript, graphique visible avec les données existantes
+      <!-- Validation report: Replaced Recharts with lightweight-charts for professional candlestick rendering. Optimized interactive trendline drawing using refs. Updated useCoinGecko hook to provide compatible timestamps. Build and type-check passed. -->
 
 ---
 
