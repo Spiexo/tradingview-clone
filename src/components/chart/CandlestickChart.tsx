@@ -1,15 +1,17 @@
-import React, { useState, useMemo } from 'react';
-import type { OHLCVData, Drawing, DrawingTool } from '../../types';
+import React, { useEffect, useRef } from 'react';
 import {
-  ResponsiveContainer,
-  ComposedChart,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Bar,
-  Cell,
-  CartesianGrid
-} from 'recharts';
+  createChart,
+  ColorType,
+  LineStyle,
+} from 'lightweight-charts';
+import type {
+  IChartApi,
+  ISeriesApi,
+  MouseEventParams,
+  Time,
+  SeriesDataItemTypeMap,
+} from 'lightweight-charts';
+import type { OHLCVData, Drawing, DrawingTool } from '../../types';
 
 interface CandlestickChartProps {
   data: OHLCVData[];
@@ -18,298 +20,248 @@ interface CandlestickChartProps {
   onDraw?: (drawing: Omit<Drawing, 'id' | 'user_id' | 'symbol' | 'timeframe'>) => void;
 }
 
-interface ChartMouseEvent {
-  activeLabel?: string | number;
-  chartY?: number;
-  height?: number;
-}
-
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    payload: OHLCVData;
-  }>;
-}
-
-const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    return (
-      <div className="bg-gray-900 border border-gray-800 p-3 text-xs text-gray-300 shadow-2xl rounded-md">
-        <p className="font-bold border-b border-gray-800 mb-2 pb-1 text-gray-100">{data.time}</p>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
-          <p>Open: <span className="text-gray-100 font-mono font-medium">{data.open.toFixed(2)}</span></p>
-          <p>High: <span className="text-gray-100 font-mono font-medium">{data.high.toFixed(2)}</span></p>
-          <p>Low: <span className="text-gray-100 font-mono font-medium">{data.low.toFixed(2)}</span></p>
-          <p>Close: <span className="text-gray-100 font-mono font-medium">{data.close.toFixed(2)}</span></p>
-        </div>
-        <div className="mt-2 pt-2 border-t border-gray-800 flex justify-between">
-          <span>Volume:</span>
-          <span className="text-gray-100 font-mono font-medium">{data.volume.toLocaleString()}</span>
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
-
-interface CandlestickProps {
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  fill?: string;
-  payload?: OHLCVData;
-}
-
-const Candlestick: React.FC<CandlestickProps> = (props) => {
-  const { x = 0, y = 0, width = 0, height = 0, fill, payload } = props;
-  if (!payload) return null;
-
-  const { open, close, high, low } = payload;
-
-  // Calculate wick positions relative to body
-  // Recharts provides y as the top of the bar and height as the bar length
-  const bodyMin = Math.min(open, close);
-  const bodyMax = Math.max(open, close);
-
-  // Avoid division by zero for Doji candles
-  const bodyHeight = Math.abs(open - close) || 0.1;
-  const ratio = height / bodyHeight;
-
-  const wickTop = y - (high - bodyMax) * ratio;
-  const wickBottom = y + height + (bodyMin - low) * ratio;
-  const centerX = x + width / 2;
-
-  return (
-    <g>
-      {/* Wick */}
-      <line
-        x1={centerX}
-        y1={wickTop}
-        x2={centerX}
-        y2={wickBottom}
-        stroke={fill}
-        strokeWidth={1.5}
-      />
-      {/* Body */}
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={Math.max(height, 1)} // Ensure body is visible even if open == close
-        fill={fill}
-      />
-    </g>
-  );
-};
-
 export const CandlestickChart: React.FC<CandlestickChartProps> = ({
   data,
   activeTool = 'cursor',
   drawings = [],
   onDraw,
 }) => {
-  const [drawingStart, setDrawingStart] = useState<{ x: string; y: number } | null>(null);
-  const [drawingEnd, setDrawingEnd] = useState<{ x: string; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  const lineSeriesRefs = useRef<ISeriesApi<'Line'>[]>([]);
+  const previewSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
-  const formattedData = useMemo(() => data.map((d) => ({
-    ...d,
-    body: [Math.min(d.open, d.close), Math.max(d.open, d.close)],
-    isPositive: d.close >= d.open,
-  })), [data]);
+  // Track current mouse position in chart space
+  const mousePositionRef = useRef<{ time: Time; price: number } | null>(null);
+  const isDrawingRef = useRef(false);
 
-  const { domain, minPrice, maxPrice } = useMemo(() => {
-    const allValues = data.flatMap((d) => [d.high, d.low]);
-    const min = data.length > 0 ? Math.min(...allValues) : 0;
-    const max = data.length > 0 ? Math.max(...allValues) : 100;
-    const range = max - min || 1;
-    const d = [min - range * 0.05, max + range * 0.05];
-    return { domain: d, minPrice: d[0], maxPrice: d[1] };
+  const drawingStartRef = useRef<{ time: Time; price: number } | null>(null);
+
+  // Initialize chart
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const chart = createChart(containerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: '#030712' }, // bg-gray-950
+        textColor: '#9ca3af', // text-gray-400
+      },
+      grid: {
+        vertLines: { color: '#1f2937' }, // border-gray-800
+        horzLines: { color: '#1f2937' },
+      },
+      width: containerRef.current.clientWidth,
+      height: containerRef.current.clientHeight,
+      timeScale: {
+        borderColor: '#1f2937',
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      rightPriceScale: {
+        borderColor: '#1f2937',
+      },
+      crosshair: {
+        mode: 0, // Normal
+        vertLine: {
+          color: '#374151',
+          width: 1,
+          style: LineStyle.Dashed,
+          labelBackgroundColor: '#1f2937',
+        },
+        horzLine: {
+          color: '#374151',
+          width: 1,
+          style: LineStyle.Dashed,
+          labelBackgroundColor: '#1f2937',
+        },
+      },
+    });
+
+    const candlestickSeries = chart.addCandlestickSeries({
+      upColor: '#4ade80', // text-green-400
+      downColor: '#f87171', // text-red-400
+      borderVisible: false,
+      wickUpColor: '#4ade80',
+      wickDownColor: '#f87171',
+    });
+
+    chartRef.current = chart;
+    candlestickSeriesRef.current = candlestickSeries;
+
+    const handleResize = () => {
+      if (containerRef.current && chartRef.current) {
+        chartRef.current.applyOptions({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(containerRef.current);
+
+    // Track mouse move for coordinates
+    const handleCrosshairMove = (param: MouseEventParams) => {
+      if (!param.time || param.point === undefined || !candlestickSeriesRef.current) {
+        mousePositionRef.current = null;
+        return;
+      }
+      const price = candlestickSeriesRef.current.coordinateToPrice(param.point.y);
+      if (price !== null) {
+        mousePositionRef.current = { time: param.time, price };
+      }
+    };
+
+    chart.subscribeCrosshairMove(handleCrosshairMove);
+
+    return () => {
+      resizeObserver.disconnect();
+      chart.unsubscribeCrosshairMove(handleCrosshairMove);
+      chart.remove();
+    };
+  }, []);
+
+  // Update data
+  useEffect(() => {
+    if (candlestickSeriesRef.current && data.length > 0) {
+      try {
+        const formattedData: SeriesDataItemTypeMap['Candlestick'][] = [];
+        const seenTimes = new Set<string>();
+
+        data.forEach((d) => {
+          // lightweight-charts needs unique, ascending times.
+          // d.time is now a timestamp string from useCoinGecko.
+          const time = parseInt(d.time, 10);
+          if (isNaN(time)) return;
+
+          if (seenTimes.has(time.toString())) return;
+          seenTimes.add(time.toString());
+
+          formattedData.push({
+            time: time as Time,
+            open: d.open,
+            high: d.high,
+            low: d.low,
+            close: d.close,
+          });
+        });
+
+        // Ensure sorted
+        formattedData.sort((a, b) => (a.time as number) - (b.time as number));
+
+        candlestickSeriesRef.current.setData(formattedData);
+        chartRef.current?.timeScale().fitContent();
+      } catch (e) {
+        console.error("Failed to set data to lightweight-charts", e);
+      }
+    }
   }, [data]);
 
-  const GREEN = '#4ade80';
-  const RED = '#f87171';
+  // Update drawings
+  useEffect(() => {
+    if (!chartRef.current) return;
 
-  const mapChartYToPrice = (y: number, height: number) => {
-    const marginTop = 20;
-    const marginBottom = 20;
-    const chartHeight = height - marginTop - marginBottom;
-    const relativeY = y - marginTop;
-    const priceRange = maxPrice - minPrice;
-    return maxPrice - (relativeY / chartHeight) * priceRange;
-  };
+    // Clear existing line series
+    lineSeriesRefs.current.forEach((s) => chartRef.current?.removeSeries(s));
+    lineSeriesRefs.current = [];
+
+    // Add new ones
+    drawings.forEach((drawing) => {
+      const lineSeries = chartRef.current!.addLineSeries({
+        color: '#60a5fa', // text-blue-400
+        lineWidth: 2,
+        lastValueVisible: false,
+        priceLineVisible: false,
+        crosshairMarkerVisible: false,
+      });
+
+      const startTime = parseInt(drawing.data.startX, 10);
+      const endTime = parseInt(drawing.data.endX, 10);
+
+      if (!isNaN(startTime) && !isNaN(endTime)) {
+        lineSeries.setData([
+          { time: startTime as Time, value: drawing.data.startY },
+          { time: endTime as Time, value: drawing.data.endY },
+        ]);
+        lineSeriesRefs.current.push(lineSeries);
+      }
+    });
+  }, [drawings]);
+
+  // Handle User Drawing Interaction
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || activeTool !== 'trendline') return;
+
+    const handleMouseDown = () => {
+      if (!mousePositionRef.current) return;
+
+      isDrawingRef.current = true;
+      drawingStartRef.current = { ...mousePositionRef.current };
+
+      if (!previewSeriesRef.current && chartRef.current) {
+        previewSeriesRef.current = chartRef.current.addLineSeries({
+          color: '#3b82f6',
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false,
+        });
+      }
+    };
+
+    const handleMouseMove = () => {
+      if (!isDrawingRef.current || !drawingStartRef.current || !mousePositionRef.current || !previewSeriesRef.current) return;
+
+      previewSeriesRef.current.setData([
+        { time: drawingStartRef.current.time, value: drawingStartRef.current.price },
+        { time: mousePositionRef.current.time, value: mousePositionRef.current.price },
+      ]);
+    };
+
+    const handleMouseUp = () => {
+      if (isDrawingRef.current && drawingStartRef.current && mousePositionRef.current && onDraw) {
+        const start = drawingStartRef.current;
+        const end = mousePositionRef.current;
+
+        if (start.time !== end.time || start.price !== end.price) {
+          onDraw({
+            type: 'trendline',
+            data: {
+              startX: start.time.toString(),
+              startY: start.price,
+              endX: end.time.toString(),
+              endY: end.price,
+            },
+          });
+        }
+      }
+
+      isDrawingRef.current = false;
+      drawingStartRef.current = null;
+      if (previewSeriesRef.current && chartRef.current) {
+        chartRef.current.removeSeries(previewSeriesRef.current);
+        previewSeriesRef.current = null;
+      }
+    };
+
+    container.addEventListener('mousedown', handleMouseDown);
+    // Use window for move and up to ensure continuity
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      container.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [activeTool, onDraw]);
 
   return (
     <div className="w-full h-full p-2 bg-gray-950 select-none">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart
-          data={formattedData}
-          margin={{ top: 20, right: 60, left: 0, bottom: 20 }}
-          onMouseDown={(e: ChartMouseEvent) => {
-            if (activeTool !== 'trendline' || !e || !e.activeLabel || e.chartY === undefined || e.height === undefined) return;
-            const label = e.activeLabel.toString();
-            const price = mapChartYToPrice(e.chartY, e.height);
-            setDrawingStart({ x: label, y: price });
-            setDrawingEnd({ x: label, y: price });
-          }}
-          onMouseMove={(e: ChartMouseEvent) => {
-            if (!drawingStart || !e || !e.activeLabel || e.chartY === undefined || e.height === undefined) return;
-            const label = e.activeLabel.toString();
-            const price = mapChartYToPrice(e.chartY, e.height);
-            setDrawingEnd({ x: label, y: price });
-          }}
-          onMouseUp={() => {
-            if (drawingStart && drawingEnd && onDraw) {
-              if (drawingStart.x !== drawingEnd.x || drawingStart.y !== drawingEnd.y) {
-                onDraw({
-                  type: 'trendline',
-                  data: {
-                    startX: drawingStart.x,
-                    startY: drawingStart.y,
-                    endX: drawingEnd.x,
-                    endY: drawingEnd.y,
-                  },
-                });
-              }
-            }
-            setDrawingStart(null);
-            setDrawingEnd(null);
-          }}
-        >
-          <CartesianGrid
-            vertical={false}
-            stroke="#1f2937" // gray-800
-            strokeDasharray="3 3"
-          />
-          <XAxis
-            dataKey="time"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: '#6b7280', fontSize: 11 }} // gray-500
-            minTickGap={30}
-          />
-          <YAxis
-            orientation="right"
-            domain={domain}
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: '#6b7280', fontSize: 11 }} // gray-500
-            tickFormatter={(value: number) =>
-              value.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
-            }
-          />
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ stroke: '#374151', strokeWidth: 1, strokeDasharray: '5 5' }}
-          />
-
-          <Bar
-            dataKey="body"
-            shape={<Candlestick />}
-            barSize={10}
-            isAnimationActive={false}
-          >
-            {formattedData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={entry.isPositive ? GREEN : RED}
-              />
-            ))}
-          </Bar>
-
-          <DrawingLayer
-            drawings={drawings}
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            data={data}
-            currentDrawing={drawingStart && drawingEnd ? {
-              type: 'trendline',
-              data: {
-                startX: drawingStart.x,
-                startY: drawingStart.y,
-                endX: drawingEnd.x,
-                endY: drawingEnd.y
-              }
-            } : null}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+      <div ref={containerRef} className="w-full h-full" />
     </div>
-  );
-};
-
-interface DrawingLayerProps {
-  drawings: Drawing[];
-  minPrice: number;
-  maxPrice: number;
-  data: OHLCVData[];
-  currentDrawing: {
-    type: DrawingTool;
-    data: {
-      startX: string;
-      startY: number;
-      endX: string;
-      endY: number;
-    };
-  } | null;
-  // Recharts injected props
-  viewBox?: { x: number; y: number; width: number; height: number };
-  xAxisMap?: Record<number, { scale: (v: number | string) => number; bandwidth?: number }>;
-  yAxisMap?: Record<number, { scale: (v: number | string) => number }>;
-}
-
-const DrawingLayer: React.FC<DrawingLayerProps> = ({
-  drawings,
-  data,
-  currentDrawing,
-  viewBox,
-  xAxisMap,
-  yAxisMap,
-}) => {
-  if (!viewBox || !xAxisMap || !yAxisMap) return null;
-
-  const xAxis = xAxisMap[0];
-  const yAxis = yAxisMap[0];
-
-  const getX = (time: string) => {
-    const index = data.findIndex((d) => d.time === time);
-    if (index === -1) return 0;
-    return xAxis.scale(index) + (xAxis.bandwidth || 0) / 2;
-  };
-
-  const getY = (price: number) => {
-    return yAxis.scale(price);
-  };
-
-  const renderDrawing = (drawing: Drawing | Exclude<DrawingLayerProps['currentDrawing'], null>, key: string, isPreview = false) => {
-    const x1 = getX(drawing.data.startX);
-    const y1 = getY(drawing.data.startY);
-    const x2 = getX(drawing.data.endX);
-    const y2 = getY(drawing.data.endY);
-
-    return (
-      <line
-        key={key}
-        x1={x1}
-        y1={y1}
-        x2={x2}
-        y2={y2}
-        stroke={isPreview ? '#3b82f6' : '#60a5fa'}
-        strokeWidth={isPreview ? 1.5 : 2}
-        strokeDasharray={isPreview ? '5,5' : 'none'}
-        className="pointer-events-none"
-      />
-    );
-  };
-
-  return (
-    <g>
-      {drawings.map((d) => renderDrawing(d, d.id))}
-      {currentDrawing && renderDrawing(currentDrawing, 'preview', true)}
-    </g>
   );
 };

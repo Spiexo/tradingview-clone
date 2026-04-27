@@ -85,19 +85,16 @@ export const useCoinGecko = (symbol: string, timeframe: Timeframe): UseCoinGecko
 
       // CoinGecko OHLC format: [ [time, open, high, low, close], ... ]
       const formattedData: OHLCVData[] = rawData.map((item: [number, number, number, number, number]) => {
-        const date = new Date(item[0]);
-        // Use a format that works well for both intraday and daily charts
-        const timeStr = days === '1' || days === '7'
-          ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          : date.toLocaleDateString([], { month: 'short', day: '2-digit' });
+        // Use unix timestamp (seconds) for lightweight-charts
+        const timestamp = Math.floor(item[0] / 1000);
 
         return {
-          time: timeStr,
+          time: timestamp.toString(), // We store it as string in our OHLCVData type for now
           open: item[1],
           high: item[2],
           low: item[3],
           close: item[4],
-          volume: 0, // CoinGecko OHLC endpoint does not provide volume
+          volume: 0,
         };
       });
 
