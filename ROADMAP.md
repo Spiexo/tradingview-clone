@@ -109,3 +109,68 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 - [x] README.md complet
 - [x] Validation étape 8 : build de production sans erreur
       <!-- Validation report: Production build (npm run build) completed successfully. Responsive design, loading states, and error handling have been implemented and verified. Documentation (README.md) is complete. -->
+
+---
+
+## Étape 9 — Migration chart engine vers Lightweight Charts
+
+> Objectif : remplacer Recharts par lightweight-charts (lib officielle TradingView OSS)
+> pour un rendu pro des candlesticks avec zoom, crosshair natif et support futur
+> des outils de dessin avancés.
+> Validation : graphique candlestick affiché avec lightweight-charts, mêmes données
+> qu'avant, couleurs bull=vert/bear=rouge, resize correct, npm run build sans erreur.
+
+- [ ] Désinstaller recharts, installer lightweight-charts@4 (`npm uninstall recharts && npm install lightweight-charts@4`)
+- [ ] Ajouter l'interface LWC dans src/types/index.ts si manquante
+- [ ] Réécrire src/components/chart/CandlestickChart.tsx avec IChartApi (useRef container, createChart, candlestickSeries, ResizeObserver, cleanup on unmount)
+- [ ] Conserver les mêmes props du composant — aucun changement d'API externe
+- [ ] Validation étape 9 : npm run build sans erreur TypeScript, graphique visible avec les données existantes
+
+---
+
+## Étape 10 — Migration API : CoinGecko → Binance (crypto) + Polygon.io (stocks)
+
+> Objectif : remplacer CoinGecko (rate limit trop bas, pas de bougies granulaires M1/M5/M15)
+> par Binance REST pour la crypto (sans clé API) et Polygon.io pour les actions (clé gratuite).
+> Validation : bougies BTC/USDT 1h réelles depuis Binance, bougies AAPL 1D depuis Polygon,
+> aucune erreur réseau, npm run build sans erreur.
+
+- [ ] Créer src/services/binance.ts — fetchKlines(symbol, interval, limit) via https://api.binance.com/api/v3/klines, pas de clé requise
+- [ ] Créer src/services/polygon.ts — fetchStockOHLCV(ticker, timespan, from, to) via VITE_POLYGON_API_KEY
+- [ ] Mettre à jour src/hooks/useOHLCV.ts pour router vers binance.ts (type 'crypto') ou polygon.ts (type 'stock')
+- [ ] Marquer src/hooks/useCoinGecko.ts comme déprécié (commentaire en tête de fichier) sans le supprimer
+- [ ] Mettre à jour src/data/mockWatchlist.ts : ajouter AAPL et TSLA avec type 'stock'
+- [ ] Validation étape 10 : données réelles crypto ET stock affichées dans le graphique, timeframes opérationnels
+
+---
+
+## Étape 11 — Orderbook live + Screener d'assets
+
+> Objectif : ajouter le panneau orderbook temps réel (Binance WebSocket) et le screener
+> permettant de naviguer entre crypto et actions depuis l'interface.
+> Validation : orderbook BTC mis à jour en temps réel, screener affiche crypto et stocks,
+> cliquer un asset met à jour le graphique principal.
+
+- [ ] Créer src/services/websocket.ts — singleton WebSocket manager (connect, disconnect, subscribe, unsubscribe par symbol)
+- [ ] Créer src/hooks/useOrderbook.ts — stream Binance wss://stream.binance.com:9443/ws/{symbol}@depth20@100ms
+- [ ] Créer src/components/orderbook/OrderbookPanel.tsx — bids (text-green-400) et asks (text-red-400) avec quantités
+- [ ] Créer src/hooks/useScreener.ts — Binance /ticker/24hr pour crypto, Polygon snapshot pour stocks
+- [ ] Créer src/components/screener/AssetScreener.tsx — onglets Crypto / Stocks, clic → mise à jour du chart
+- [ ] Intégrer OrderbookPanel et AssetScreener dans MainLayout sans casser le layout existant
+- [ ] Validation étape 11 : orderbook live fonctionnel, screener opérationnel sur les deux onglets, npm run build sans erreur
+
+---
+
+## Étape 12 — Multi-timeframes & indicateurs techniques
+
+> Objectif : rendre les timeframes pleinement opérationnels avec lightweight-charts
+> et ajouter les indicateurs MA, RSI, MACD, Bollinger en overlay ou panneau séparé.
+> Validation : changement de timeframe recharge les données, au moins MA20 et RSI visibles.
+
+- [ ] Connecter ChartToolbar au hook useOHLCV — changer timeframe recharge les données via Binance/Polygon
+- [ ] Implémenter Moving Average (MA20, MA50) en overlay sur le graphique principal (LineSeries)
+- [ ] Implémenter RSI(14) dans un panneau séparé sous le graphique principal
+- [ ] Implémenter MACD dans un troisième panneau optionnel (toggle on/off)
+- [ ] Implémenter Bollinger Bands (20, 2) en overlay sur le graphique principal
+- [ ] Permettre d'activer/désactiver chaque indicateur depuis ChartToolbar
+- [ ] Validation étape 12 : tous les timeframes fonctionnels, MA20 + RSI affichés par défaut, build sans erreur
