@@ -9,7 +9,7 @@
 
 This is a TradingView-inspired trading dashboard clone.
 It is a frontend-only application — no backend, no authentication, no database.
-All data is either mocked/static or fetched from public APIs (CoinGecko, Yahoo Finance).
+All data is either mocked/static or fetched from public APIs (Binance REST API (crypto OHLCV + orderbook) and Polygon.io (stocks OHLCV + screener), Yahoo Finance).
 
 ---
 
@@ -21,7 +21,7 @@ All data is either mocked/static or fetched from public APIs (CoinGecko, Yahoo F
 | TypeScript | 5+ (strict mode enabled) |
 | Tailwind CSS | 3 |
 | Vite | 5 |
-| Recharts | latest |
+| lightweight-charts | 4.x |
 | Supabase JS | 2 |
 
 No other libraries may be installed without explicitly mentioning it in the PR description with a justification.
@@ -117,6 +117,7 @@ Supabase credentials are stored in environment variables — never hardcode them
 ### Environment variables (already configured locally, never commit .env)
 - `VITE_SUPABASE_URL` — Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` — Supabase anonymous public key
+- `VITE_POLYGON_API_KEY` — Polygon.io API key for stocks data
 
 ### Supabase client
 A single shared client must be used across the app, located at `src/lib/supabase.ts` :
@@ -182,3 +183,22 @@ src/
 │   └── supabase.ts     # Supabase client singleton
 ├── hooks/
 │   └── useAuth.ts      # Auth state hook
+
+---
+
+## 11. Market Data APIs
+
+### Crypto (Binance — no API key required)
+- OHLCV: GET https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=500
+- Intervals: 1m, 5m, 15m, 1h, 4h, 1d, 1w
+- Orderbook: WSS wss://stream.binance.com:9443/ws/btcusdt@depth20@100ms
+- 24h ticker: GET https://api.binance.com/api/v3/ticker/24hr
+
+### Stocks (Polygon.io — API key required)
+- OHLCV: GET https://api.polygon.io/v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from}/{to}
+- Snapshot: GET https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers
+
+### Service files
+- src/services/binance.ts — all Binance REST calls
+- src/services/polygon.ts — all Polygon.io REST calls
+- src/services/websocket.ts — WebSocket manager (singleton)
