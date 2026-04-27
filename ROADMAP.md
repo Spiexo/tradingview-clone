@@ -138,7 +138,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 
 - [x] Créer src/services/binance.ts — fetchKlines(symbol, interval, limit) via https://api.binance.com/api/v3/klines, pas de clé requise
 - [x] Créer src/services/polygon.ts — fetchStockOHLCV(ticker, timespan, from, to) via VITE_POLYGON_API_KEY
-- [ ] Mettre à jour src/hooks/useOHLCV.ts pour router vers binance.ts (type 'crypto') ou polygon.ts (type 'stock')
+- [x] Mettre à jour src/hooks/useOHLCV.ts pour router vers binance.ts (type 'crypto') ou polygon.ts (type 'stock')
 - [ ] Marquer src/hooks/useCoinGecko.ts comme déprécié (commentaire en tête de fichier) sans le supprimer
 - [ ] Mettre à jour src/data/mockWatchlist.ts : ajouter AAPL et TSLA avec type 'stock'
 - [ ] Validation étape 10 : données réelles crypto ET stock affichées dans le graphique, timeframes opérationnels
