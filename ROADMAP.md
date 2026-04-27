@@ -137,7 +137,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > aucune erreur réseau, npm run build sans erreur.
 
 - [x] Créer src/services/binance.ts — fetchKlines(symbol, interval, limit) via https://api.binance.com/api/v3/klines, pas de clé requise
-- [ ] Créer src/services/polygon.ts — fetchStockOHLCV(ticker, timespan, from, to) via VITE_POLYGON_API_KEY
+- [x] Créer src/services/polygon.ts — fetchStockOHLCV(ticker, timespan, from, to) via VITE_POLYGON_API_KEY
 - [ ] Mettre à jour src/hooks/useOHLCV.ts pour router vers binance.ts (type 'crypto') ou polygon.ts (type 'stock')
 - [ ] Marquer src/hooks/useCoinGecko.ts comme déprécié (commentaire en tête de fichier) sans le supprimer
 - [ ] Mettre à jour src/data/mockWatchlist.ts : ajouter AAPL et TSLA avec type 'stock'
