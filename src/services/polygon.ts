@@ -30,6 +30,7 @@ interface PolygonResponse {
 /**
  * Fetches OHLCV data from Polygon.io REST API.
  * @param ticker The stock ticker (e.g., 'AAPL')
+ * @param multiplier The size of the timespan multiplier (e.g., 1, 5, 15)
  * @param timespan The size of the time window (e.g., 'day', 'hour', 'minute')
  * @param from The start date (YYYY-MM-DD)
  * @param to The end date (YYYY-MM-DD)
@@ -37,6 +38,7 @@ interface PolygonResponse {
  */
 export const fetchStockOHLCV = async (
   ticker: string,
+  multiplier: number,
   timespan: string,
   from: string,
   to: string
@@ -45,7 +47,6 @@ export const fetchStockOHLCV = async (
     throw new Error('VITE_POLYGON_API_KEY is not configured. Please add your API key to .env file.');
   }
 
-  const multiplier = 1;
   const url = `${BASE_URL}/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}?apiKey=${API_KEY}`;
 
   try {
