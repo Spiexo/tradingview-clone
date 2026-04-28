@@ -58,3 +58,13 @@ export interface Alert {
 }
 
 export type Timeframe = '1m' | '5m' | '15m' | '1h' | '4h' | '1D' | '1W';
+
+export interface OrderbookItem {
+  price: number;
+  quantity: number;
+}
+
+export interface OrderbookData {
+  bids: OrderbookItem[];
+  asks: OrderbookItem[];
+}
