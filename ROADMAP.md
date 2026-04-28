@@ -153,7 +153,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : orderbook BTC mis à jour en temps réel, screener affiche crypto et stocks,
 > cliquer un asset met à jour le graphique principal.
 
-- [ ] Créer src/services/websocket.ts — singleton WebSocket manager (connect, disconnect, subscribe, unsubscribe par symbol)
+- [x] Créer src/services/websocket.ts — singleton WebSocket manager (connect, disconnect, subscribe, unsubscribe par symbol)
 - [ ] Créer src/hooks/useOrderbook.ts — stream Binance wss://stream.binance.com:9443/ws/{symbol}@depth20@100ms
 - [ ] Créer src/components/orderbook/OrderbookPanel.tsx — bids (text-green-400) et asks (text-red-400) avec quantités
 - [ ] Créer src/hooks/useScreener.ts — Binance /ticker/24hr pour crypto, Polygon snapshot pour stocks
