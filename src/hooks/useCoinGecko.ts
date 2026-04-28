@@ -1,3 +1,7 @@
+/**
+ * @deprecated This hook is deprecated. Use useOHLCV instead for fetching market data.
+ * CoinGecko has strict rate limits and lacks granular candle data for lower timeframes.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import type { OHLCVData, Timeframe } from '../types';
 
