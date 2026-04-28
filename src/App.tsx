@@ -14,7 +14,8 @@ import { ErrorMessage } from './components/ui/ErrorMessage';
 import { useAuth } from './hooks/useAuth';
 import { useWatchlist } from './hooks/useWatchlist';
 import { useDrawings } from './hooks/useDrawings';
-import { useCoinGecko, useCoinGeckoMarkets, SYMBOL_TO_ID } from './hooks/useCoinGecko';
+import { useOHLCV } from './hooks/useOHLCV';
+import { useCoinGeckoMarkets, SYMBOL_TO_ID } from './hooks/useCoinGecko';
 import type { RightPanelType } from './components/layout/Sidebar';
 import { mockAssets } from './data/mockWatchlist';
 import type { Timeframe, Asset, DrawingTool } from './types';
@@ -47,7 +48,7 @@ const App: React.FC = () => {
     loading: chartLoading,
     error: chartError,
     refresh: refreshChart
-  } = useCoinGecko(activeAsset.symbol, activeTimeframe);
+  } = useOHLCV(activeAsset.symbol, activeAsset.type, activeTimeframe);
 
   const coinIds = useMemo(() => {
     const ids = new Set<string>();

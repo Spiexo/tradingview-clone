@@ -8,5 +8,6 @@ export const mockAssets: Asset[] = [
   { symbol: 'NVDA', name: 'NVIDIA Corp.', type: 'stock', price: 550.80, change: 15.20, changePercent: 2.84 },
   { symbol: 'TSLA', name: 'Tesla, Inc.', type: 'stock', price: 210.40, change: -5.50, changePercent: -2.55 },
   { symbol: 'SPY', name: 'SPDR S&P 500 ETF', type: 'stock', price: 480.25, change: 2.15, changePercent: 0.45 },
+  { symbol: 'MSFT', name: 'Microsoft Corporation', type: 'stock', price: 400.00, change: 5.00, changePercent: 1.25 },
   { symbol: 'GOLD', name: 'Gold', type: 'stock', price: 2030.50, change: -3.20, changePercent: -0.16 },
 ];

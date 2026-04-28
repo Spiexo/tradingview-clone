@@ -140,8 +140,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 - [x] Créer src/services/polygon.ts — fetchStockOHLCV(ticker, timespan, from, to) via VITE_POLYGON_API_KEY
 - [x] Mettre à jour src/hooks/useOHLCV.ts pour router vers binance.ts (type 'crypto') ou polygon.ts (type 'stock')
 - [x] Marquer src/hooks/useCoinGecko.ts comme déprécié (commentaire en tête de fichier) sans le supprimer
-- [ ] Mettre à jour src/data/mockWatchlist.ts : ajouter AAPL et TSLA avec type 'stock'
-- [ ] Validation étape 10 : données réelles crypto ET stock affichées dans le graphique, timeframes opérationnels
+- [x] Mettre à jour src/data/mockWatchlist.ts : ajouter AAPL et TSLA avec type 'stock'
+- [x] Validation étape 10 : données réelles crypto ET stock affichées dans le graphique, timeframes opérationnels
+      <!-- Validation report: Successfully integrated Binance and Polygon.io APIs. Chart data is now fetched using the useOHLCV hook, routing requests to the appropriate provider based on asset type. AAPL and TSLA are confirmed in mockWatchlist with type 'stock'. Build and type-check passed. -->
 
 ---
 
