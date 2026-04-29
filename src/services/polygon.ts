@@ -1,4 +1,4 @@
-import type { OHLCVData } from '../types';
+import type { Asset, OHLCVData } from '../types';
 
 const BASE_URL = 'https://api.polygon.io/v2';
 const API_KEY = import.meta.env.VITE_POLYGON_API_KEY;
@@ -78,6 +78,57 @@ export const fetchStockOHLCV = async (
     }));
   } catch (error) {
     console.error('Error fetching Polygon stock data:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches snapshots for all tickers in the US stocks market.
+ * @returns A promise that resolves to an array of Asset objects
+ */
+export const fetchStockSnapshots = async (): Promise<Asset[]> => {
+  if (!API_KEY || API_KEY === 'placeholder') {
+    throw new Error('VITE_POLYGON_API_KEY is not configured. Please add your API key to .env file.');
+  }
+
+  const url = `${BASE_URL}/snapshot/locale/us/markets/stocks/tickers?apiKey=${API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.message || `Failed to fetch stock snapshots`);
+    }
+
+    const data = await response.json();
+
+    if (data.status !== 'OK') {
+      throw new Error(data.error || data.message || `Polygon API returned status: ${data.status}`);
+    }
+
+    if (!data.tickers) {
+      return [];
+    }
+
+    interface PolygonTicker {
+      ticker: string;
+      day?: { c: number };
+      prevDay?: { c: number };
+      todaysChange?: number;
+      todaysChangePerc?: number;
+    }
+
+    return (data.tickers as PolygonTicker[]).map((item) => ({
+      symbol: item.ticker,
+      name: item.ticker, // Polygon snapshot doesn't always provide a full name, using ticker as fallback
+      type: 'stock' as const,
+      price: item.day?.c || item.prevDay?.c || 0,
+      change: item.todaysChange || 0,
+      changePercent: item.todaysChangePerc || 0,
+    }));
+  } catch (error) {
+    console.error('Error fetching Polygon stock snapshots:', error);
     throw error;
   }
 };
