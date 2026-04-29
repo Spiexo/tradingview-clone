@@ -155,7 +155,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 
 - [x] Créer src/services/websocket.ts — singleton WebSocket manager (connect, disconnect, subscribe, unsubscribe par symbol)
 - [x] Créer src/hooks/useOrderbook.ts — stream Binance wss://stream.binance.com:9443/ws/{symbol}@depth20@100ms
-- [ ] Créer src/components/orderbook/OrderbookPanel.tsx — bids (text-green-400) et asks (text-red-400) avec quantités
+- [x] Créer src/components/orderbook/OrderbookPanel.tsx — bids (text-green-400) et asks (text-red-400) avec quantités
 - [ ] Créer src/hooks/useScreener.ts — Binance /ticker/24hr pour crypto, Polygon snapshot pour stocks
 - [ ] Créer src/components/screener/AssetScreener.tsx — onglets Crypto / Stocks, clic → mise à jour du chart
 - [ ] Intégrer OrderbookPanel et AssetScreener dans MainLayout sans casser le layout existant
