@@ -1,6 +1,29 @@
-import type { OHLCVData, Timeframe } from '../types';
+import type { Asset, OHLCVData, Timeframe } from '../types';
 
 const BASE_URL = 'https://api.binance.com/api/v3';
+
+interface BinanceTicker {
+  symbol: string;
+  lastPrice: string;
+  priceChange: string;
+  priceChangePercent: string;
+}
+
+/**
+ * Mapping of common Binance symbols to their full names.
+ */
+const SYMBOL_NAMES: Record<string, string> = {
+  BTCUSDT: 'Bitcoin',
+  ETHUSDT: 'Ethereum',
+  BNBUSDT: 'Binance Coin',
+  SOLUSDT: 'Solana',
+  ADAUSDT: 'Cardano',
+  XRPUSDT: 'Ripple',
+  DOTUSDT: 'Polkadot',
+  DOGEUSDT: 'Dogecoin',
+  MATICUSDT: 'Polygon',
+  LINKUSDT: 'Chainlink',
+};
 
 /**
  * Maps our application Timeframe type to Binance API interval strings.
@@ -69,6 +92,41 @@ export const fetchKlines = async (
     }));
   } catch (error) {
     console.error('Error fetching Binance klines:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches 24h ticker price change statistics for all symbols.
+ * @returns A promise that resolves to an array of Asset objects
+ */
+export const fetch24hTickers = async (): Promise<Asset[]> => {
+  const url = `${BASE_URL}/ticker/24hr`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch 24h tickers: ${response.statusText}`);
+    }
+
+    const data: BinanceTicker[] = await response.json();
+
+    return data
+      .filter((item) => item.symbol.endsWith('USDT'))
+      .map((item) => {
+        const symbol = item.symbol.replace('USDT', '');
+        return {
+          symbol,
+          name: SYMBOL_NAMES[item.symbol] || symbol,
+          type: 'crypto' as const,
+          price: parseFloat(item.lastPrice),
+          change: parseFloat(item.priceChange),
+          changePercent: parseFloat(item.priceChangePercent),
+        };
+      });
+  } catch (error) {
+    console.error('Error fetching Binance 24h tickers:', error);
     throw error;
   }
 };
