@@ -1,7 +1,7 @@
 import React from 'react';
-import { BarChart2, Star, Bell, Settings } from 'lucide-react';
+import { BarChart2, Star, Bell, Settings, List, Search } from 'lucide-react';
 
-export type RightPanelType = 'watchlist' | 'alerts' | null;
+export type RightPanelType = 'watchlist' | 'alerts' | 'orderbook' | 'screener' | null;
 
 interface SidebarProps {
   activePanel: RightPanelType;
@@ -26,14 +26,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) 
           className={`cursor-pointer transition-colors p-2 ${
             activePanel === 'watchlist' ? 'text-blue-500' : 'text-gray-400 hover:text-white'
           }`}
+          title="Watchlist"
         >
           <Star size={20} />
+        </button>
+        <button
+          onClick={() => onPanelChange(activePanel === 'screener' ? null : 'screener')}
+          className={`cursor-pointer transition-colors p-2 ${
+            activePanel === 'screener' ? 'text-blue-500' : 'text-gray-400 hover:text-white'
+          }`}
+          title="Screener"
+        >
+          <Search size={20} />
+        </button>
+        <button
+          onClick={() => onPanelChange(activePanel === 'orderbook' ? null : 'orderbook')}
+          className={`cursor-pointer transition-colors p-2 ${
+            activePanel === 'orderbook' ? 'text-blue-500' : 'text-gray-400 hover:text-white'
+          }`}
+          title="Orderbook"
+        >
+          <List size={20} />
         </button>
         <button
           onClick={() => onPanelChange(activePanel === 'alerts' ? null : 'alerts')}
           className={`cursor-pointer transition-colors p-2 ${
             activePanel === 'alerts' ? 'text-blue-500' : 'text-gray-400 hover:text-white'
           }`}
+          title="Alerts"
         >
           <Bell size={20} />
         </button>

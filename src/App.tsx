@@ -3,6 +3,8 @@ import './index.css';
 import { MainLayout } from './components/layout/MainLayout';
 import { WatchlistPanel } from './components/watchlist/WatchlistPanel';
 import { AlertPanel } from './components/alerts/AlertPanel';
+import { OrderbookPanel } from './components/orderbook/OrderbookPanel';
+import { AssetScreener } from './components/screener/AssetScreener';
 import { CandlestickChart } from './components/chart/CandlestickChart';
 import { ChartToolbar } from './components/chart/ChartToolbar';
 import { DrawingToolbar } from './components/chart/DrawingToolbar';
@@ -198,6 +200,13 @@ const App: React.FC = () => {
                   refreshMarkets();
                 }}
               />
+            ) : activePanel === 'screener' ? (
+              <AssetScreener
+                activeSymbol={activeAsset.symbol}
+                onAssetSelect={setActiveAsset}
+              />
+            ) : activePanel === 'orderbook' ? (
+              <OrderbookPanel asset={displayActiveAsset} />
             ) : activePanel === 'alerts' ? (
               <AlertPanel activeAsset={displayActiveAsset} />
             ) : null
