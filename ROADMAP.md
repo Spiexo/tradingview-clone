@@ -158,8 +158,9 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 - [x] Créer src/components/orderbook/OrderbookPanel.tsx — bids (text-green-400) et asks (text-red-400) avec quantités
 - [x] Créer src/hooks/useScreener.ts — Binance /ticker/24hr pour crypto, Polygon snapshot pour stocks
 - [x] Créer src/components/screener/AssetScreener.tsx — onglets Crypto / Stocks, clic → mise à jour du chart
-- [ ] Intégrer OrderbookPanel et AssetScreener dans MainLayout sans casser le layout existant
-- [ ] Validation étape 11 : orderbook live fonctionnel, screener opérationnel sur les deux onglets, npm run build sans erreur
+- [x] Intégrer OrderbookPanel et AssetScreener dans MainLayout sans casser le layout existant
+- [x] Validation étape 11 : orderbook live fonctionnel, screener opérationnel sur les deux onglets, npm run build sans erreur
+      <!-- Validation report: OrderbookPanel and AssetScreener have been integrated into MainLayout via Sidebar navigation. Real-time orderbook data and asset screening for both crypto and stocks are now accessible. Build and type-check passed. -->
 
 ---
 
