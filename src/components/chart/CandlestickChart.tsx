@@ -11,12 +11,14 @@ import type {
   Time,
   SeriesDataItemTypeMap,
 } from 'lightweight-charts';
-import type { OHLCVData, Drawing, DrawingTool } from '../../types';
+import type { OHLCVData, Drawing, DrawingTool, IndicatorsState } from '../../types';
+import { calculateSMA } from '../../utils/indicators';
 
 interface CandlestickChartProps {
   data: OHLCVData[];
   activeTool?: DrawingTool;
   drawings?: Drawing[];
+  indicators?: IndicatorsState;
   onDraw?: (drawing: Omit<Drawing, 'id' | 'user_id' | 'symbol' | 'timeframe'>) => void;
 }
 
@@ -24,6 +26,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
   data,
   activeTool = 'cursor',
   drawings = [],
+  indicators,
   onDraw,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +34,9 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const lineSeriesRefs = useRef<ISeriesApi<'Line'>[]>([]);
   const previewSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
+  const ma20SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const ma50SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
   // Track current mouse position in chart space
   const mousePositionRef = useRef<{ time: Time; price: number } | null>(null);
@@ -157,6 +163,47 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
       }
     }
   }, [data]);
+
+  // Update Indicators
+  useEffect(() => {
+    if (!chartRef.current || !data.length) return;
+
+    // Handle MA20
+    if (indicators?.ma20) {
+      if (!ma20SeriesRef.current) {
+        ma20SeriesRef.current = chartRef.current.addLineSeries({
+          color: '#fbbf24', // amber-400
+          lineWidth: 1,
+          lastValueVisible: false,
+          priceLineVisible: false,
+          title: 'MA20',
+        });
+      }
+      const ma20Data = calculateSMA(data, 20);
+      ma20SeriesRef.current.setData(ma20Data);
+    } else if (ma20SeriesRef.current) {
+      chartRef.current.removeSeries(ma20SeriesRef.current);
+      ma20SeriesRef.current = null;
+    }
+
+    // Handle MA50
+    if (indicators?.ma50) {
+      if (!ma50SeriesRef.current) {
+        ma50SeriesRef.current = chartRef.current.addLineSeries({
+          color: '#8b5cf6', // violet-500
+          lineWidth: 1,
+          lastValueVisible: false,
+          priceLineVisible: false,
+          title: 'MA50',
+        });
+      }
+      const ma50Data = calculateSMA(data, 50);
+      ma50SeriesRef.current.setData(ma50Data);
+    } else if (ma50SeriesRef.current) {
+      chartRef.current.removeSeries(ma50SeriesRef.current);
+      ma50SeriesRef.current = null;
+    }
+  }, [data, indicators]);
 
   // Update drawings
   useEffect(() => {

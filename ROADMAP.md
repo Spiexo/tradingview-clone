@@ -171,7 +171,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > Validation : changement de timeframe recharge les données, au moins MA20 et RSI visibles.
 
 - [x] Connecter ChartToolbar au hook useOHLCV — changer timeframe recharge les données via Binance/Polygon
-- [ ] Implémenter Moving Average (MA20, MA50) en overlay sur le graphique principal (LineSeries)
+- [x] Implémenter Moving Average (MA20, MA50) en overlay sur le graphique principal (LineSeries)
 - [ ] Implémenter RSI(14) dans un panneau séparé sous le graphique principal
 - [ ] Implémenter MACD dans un troisième panneau optionnel (toggle on/off)
 - [ ] Implémenter Bollinger Bands (20, 2) en overlay sur le graphique principal
