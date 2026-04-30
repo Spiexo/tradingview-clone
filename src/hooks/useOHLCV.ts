@@ -12,12 +12,12 @@ interface UseOHLCVResult {
 
 const TIMEFRAME_TO_POLYGON: Record<Timeframe, { multiplier: number; timespan: string; daysBack: number }> = {
   '1m': { multiplier: 1, timespan: 'minute', daysBack: 1 },
-  '5m': { multiplier: 5, timespan: 'minute', daysBack: 2 },
-  '15m': { multiplier: 15, timespan: 'minute', daysBack: 5 },
-  '1h': { multiplier: 1, timespan: 'hour', daysBack: 7 },
-  '4h': { multiplier: 4, timespan: 'hour', daysBack: 14 },
-  '1D': { multiplier: 1, timespan: 'day', daysBack: 90 },
-  '1W': { multiplier: 1, timespan: 'week', daysBack: 365 },
+  '5m': { multiplier: 5, timespan: 'minute', daysBack: 5 },
+  '15m': { multiplier: 15, timespan: 'minute', daysBack: 10 },
+  '1h': { multiplier: 1, timespan: 'hour', daysBack: 30 },
+  '4h': { multiplier: 4, timespan: 'hour', daysBack: 60 },
+  '1D': { multiplier: 1, timespan: 'day', daysBack: 365 },
+  '1W': { multiplier: 1, timespan: 'week', daysBack: 1825 }, // 5 years
 };
 
 /**
@@ -38,6 +38,7 @@ export const useOHLCV = (
   const fetchData = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
+    setData([]); // Clear old data when starting a new fetch
 
     try {
       let fetchedData: OHLCVData[] = [];

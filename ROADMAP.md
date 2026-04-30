@@ -170,7 +170,7 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 > et ajouter les indicateurs MA, RSI, MACD, Bollinger en overlay ou panneau séparé.
 > Validation : changement de timeframe recharge les données, au moins MA20 et RSI visibles.
 
-- [ ] Connecter ChartToolbar au hook useOHLCV — changer timeframe recharge les données via Binance/Polygon
+- [x] Connecter ChartToolbar au hook useOHLCV — changer timeframe recharge les données via Binance/Polygon
 - [ ] Implémenter Moving Average (MA20, MA50) en overlay sur le graphique principal (LineSeries)
 - [ ] Implémenter RSI(14) dans un panneau séparé sous le graphique principal
 - [ ] Implémenter MACD dans un troisième panneau optionnel (toggle on/off)

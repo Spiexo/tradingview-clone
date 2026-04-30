@@ -5,6 +5,7 @@ import type { Timeframe } from '../../types';
 interface ChartToolbarProps {
   activeTimeframe: Timeframe;
   onTimeframeChange: (timeframe: Timeframe) => void;
+  isLoading?: boolean;
 }
 
 const TIMEFRAMES: Timeframe[] = ['1m', '5m', '15m', '1h', '4h', '1D', '1W'];
@@ -12,6 +13,7 @@ const TIMEFRAMES: Timeframe[] = ['1m', '5m', '15m', '1h', '4h', '1D', '1W'];
 export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   activeTimeframe,
   onTimeframeChange,
+  isLoading = false,
 }) => {
   return (
     <div className="h-10 flex items-center px-2 md:px-4 bg-gray-900 border-b border-gray-800 justify-between overflow-x-auto scrollbar-hide">
@@ -21,11 +23,12 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
             <button
               key={tf}
               onClick={() => onTimeframeChange(tf)}
+              disabled={isLoading}
               className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
                 activeTimeframe === tf
                   ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
+                  : 'text-gray-400 hover:text-gray-200 disabled:hover:text-gray-400'
+              } ${isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
             >
               {tf}
             </button>
