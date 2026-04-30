@@ -215,6 +215,7 @@ const App: React.FC = () => {
           <ChartToolbar
             activeTimeframe={activeTimeframe}
             onTimeframeChange={setActiveTimeframe}
+            isLoading={chartLoading}
           />
           <div className="flex-1 flex overflow-hidden">
             <DrawingToolbar
