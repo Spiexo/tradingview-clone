@@ -35,7 +35,7 @@ export const useOHLCV = (
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
 
@@ -43,7 +43,7 @@ export const useOHLCV = (
       let fetchedData: OHLCVData[] = [];
 
       if (type === 'crypto') {
-        fetchedData = await fetchKlines(symbol, timeframe);
+        fetchedData = await fetchKlines(symbol, timeframe, 500, signal);
       } else {
         const config = TIMEFRAME_TO_POLYGON[timeframe];
         const to = new Date();
@@ -57,12 +57,16 @@ export const useOHLCV = (
           config.multiplier,
           config.timespan,
           formatDate(from),
-          formatDate(to)
+          formatDate(to),
+          signal
         );
       }
 
       setData(fetchedData);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
       setData([]);
     } finally {
@@ -71,8 +75,10 @@ export const useOHLCV = (
   }, [symbol, type, timeframe]);
 
   useEffect(() => {
-    fetchData();
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
   }, [fetchData]);
 
-  return { data, loading, error, refresh: fetchData };
+  return { data, loading, error, refresh: () => fetchData() };
 };
