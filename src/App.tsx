@@ -20,7 +20,7 @@ import { useOHLCV } from './hooks/useOHLCV';
 import { useCoinGeckoMarkets, SYMBOL_TO_ID } from './hooks/useCoinGecko';
 import type { RightPanelType } from './components/layout/Sidebar';
 import { mockAssets } from './data/mockWatchlist';
-import type { Timeframe, Asset, DrawingTool } from './types';
+import type { Timeframe, Asset, DrawingTool, IndicatorsState } from './types';
 
 const App: React.FC = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -38,6 +38,13 @@ const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTool, setActiveTool] = useState<DrawingTool>('cursor');
   const [activePanel, setActivePanel] = useState<RightPanelType>('watchlist');
+  const [indicators] = useState<IndicatorsState>({
+    ma20: true,
+    ma50: true,
+    rsi: false,
+    macd: false,
+    bb: false,
+  });
 
   const {
     drawings,
@@ -244,6 +251,7 @@ const App: React.FC = () => {
                   data={chartData}
                   activeTool={activeTool}
                   drawings={drawings}
+                  indicators={indicators}
                   onDraw={handleAddDrawing}
                 />
               )}

@@ -68,3 +68,11 @@ export interface OrderbookData {
   bids: OrderbookItem[];
   asks: OrderbookItem[];
 }
+
+export interface IndicatorsState {
+  ma20: boolean;
+  ma50: boolean;
+  rsi: boolean;
+  macd: boolean;
+  bb: boolean;
+}
