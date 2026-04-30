@@ -41,7 +41,8 @@ export const fetchStockOHLCV = async (
   multiplier: number,
   timespan: string,
   from: string,
-  to: string
+  to: string,
+  signal?: AbortSignal
 ): Promise<OHLCVData[]> => {
   if (!API_KEY || API_KEY === 'placeholder') {
     throw new Error('VITE_POLYGON_API_KEY is not configured. Please add your API key to .env file.');
@@ -50,7 +51,7 @@ export const fetchStockOHLCV = async (
   const url = `${BASE_URL}/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}?apiKey=${API_KEY}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
 
     if (!response.ok) {
       const errorData = await response.json() as PolygonResponse;

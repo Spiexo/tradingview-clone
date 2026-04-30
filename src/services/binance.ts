@@ -60,7 +60,8 @@ const formatSymbol = (symbol: string): string => {
 export const fetchKlines = async (
   symbol: string,
   interval: Timeframe,
-  limit: number = 500
+  limit: number = 500,
+  signal?: AbortSignal
 ): Promise<OHLCVData[]> => {
   const binanceSymbol = formatSymbol(symbol);
   const binanceInterval = TIMEFRAME_MAP[interval];
@@ -72,7 +73,7 @@ export const fetchKlines = async (
   const url = `${BASE_URL}/klines?symbol=${binanceSymbol}&interval=${binanceInterval}&limit=${limit}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
 
     if (!response.ok) {
       const errorData = await response.json();
