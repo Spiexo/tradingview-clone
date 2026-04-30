@@ -12,7 +12,7 @@ import type {
   SeriesDataItemTypeMap,
 } from 'lightweight-charts';
 import type { OHLCVData, Drawing, DrawingTool, IndicatorsState } from '../../types';
-import { calculateSMA } from '../../utils/indicators';
+import { calculateSMA, calculateRSI } from '../../utils/indicators';
 
 interface CandlestickChartProps {
   data: OHLCVData[];
@@ -37,6 +37,14 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
 
   const ma20SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const ma50SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
+  // RSI Chart Refs
+  const rsiContainerRef = useRef<HTMLDivElement>(null);
+  const rsiChartRef = useRef<IChartApi | null>(null);
+  const rsiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
+  // Sync Unsubscribe Refs
+  const syncUnsubscribersRef = useRef<(() => void)[]>([]);
 
   // Track current mouse position in chart space
   const mousePositionRef = useRef<{ time: Time; price: number } | null>(null);
@@ -102,6 +110,12 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
           height: containerRef.current.clientHeight,
         });
       }
+      if (rsiContainerRef.current && rsiChartRef.current) {
+        rsiChartRef.current.applyOptions({
+          width: rsiContainerRef.current.clientWidth,
+          height: rsiContainerRef.current.clientHeight,
+        });
+      }
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
@@ -124,6 +138,10 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
     return () => {
       resizeObserver.disconnect();
       chart.unsubscribeCrosshairMove(handleCrosshairMove);
+      if (rsiChartRef.current) {
+        rsiChartRef.current.remove();
+        rsiChartRef.current = null;
+      }
       chart.remove();
     };
   }, []);
@@ -202,6 +220,138 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
     } else if (ma50SeriesRef.current) {
       chartRef.current.removeSeries(ma50SeriesRef.current);
       ma50SeriesRef.current = null;
+    }
+
+    // Handle RSI
+    if (indicators?.rsi) {
+      if (!rsiChartRef.current && rsiContainerRef.current) {
+        const rsiChart = createChart(rsiContainerRef.current, {
+          layout: {
+            background: { type: ColorType.Solid, color: '#030712' },
+            textColor: '#9ca3af',
+          },
+          grid: {
+            vertLines: { color: '#1f2937' },
+            horzLines: { color: '#1f2937' },
+          },
+          width: rsiContainerRef.current.clientWidth,
+          height: rsiContainerRef.current.clientHeight,
+          timeScale: {
+            borderColor: '#1f2937',
+            timeVisible: true,
+            secondsVisible: false,
+          },
+          rightPriceScale: {
+            borderColor: '#1f2937',
+          },
+          crosshair: {
+            mode: 0,
+            vertLine: {
+              color: '#374151',
+              width: 1,
+              style: LineStyle.Dashed,
+              labelBackgroundColor: '#1f2937',
+            },
+            horzLine: {
+              color: '#374151',
+              width: 1,
+              style: LineStyle.Dashed,
+              labelBackgroundColor: '#1f2937',
+            },
+          },
+        });
+
+        const rsiSeries = rsiChart.addLineSeries({
+          color: '#8b5cf6', // violet-500
+          lineWidth: 2,
+          title: 'RSI(14)',
+        });
+
+        rsiChart.priceScale('right').applyOptions({
+          autoScale: false,
+          scaleMargins: {
+            top: 0.1,
+            bottom: 0.1,
+          },
+        });
+
+        // Add 70/30 lines
+        rsiSeries.createPriceLine({
+          price: 70,
+          color: '#ef4444',
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: '70',
+        });
+        rsiSeries.createPriceLine({
+          price: 30,
+          color: '#22c55e',
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: '30',
+        });
+
+        rsiChartRef.current = rsiChart;
+        rsiSeriesRef.current = rsiSeries;
+
+        // Sync logic
+        const mainChart = chartRef.current;
+        const mainTimeScale = mainChart.timeScale();
+        const rsiTimeScale = rsiChart.timeScale();
+
+        const handleMainVisibleRangeChange = (range: any) => {
+          if (range) rsiTimeScale.setVisibleLogicalRange(range);
+        };
+        const handleRSIVisibleRangeChange = (range: any) => {
+          if (range) mainTimeScale.setVisibleLogicalRange(range);
+        };
+        const handleMainCrosshairMove = (param: any) => {
+          if (rsiChartRef.current && rsiSeriesRef.current) {
+            if (param.time) {
+              rsiChartRef.current.setCrosshairPosition(0, param.time, rsiSeriesRef.current);
+            } else {
+              rsiChartRef.current.clearCrosshairPosition();
+            }
+          }
+        };
+        const handleRSICrosshairMove = (param: any) => {
+          if (chartRef.current && candlestickSeriesRef.current) {
+            if (param.time) {
+              chartRef.current.setCrosshairPosition(0, param.time, candlestickSeriesRef.current);
+            } else {
+              chartRef.current.clearCrosshairPosition();
+            }
+          }
+        };
+
+        mainTimeScale.subscribeVisibleLogicalRangeChange(handleMainVisibleRangeChange);
+        rsiTimeScale.subscribeVisibleLogicalRangeChange(handleRSIVisibleRangeChange);
+        mainChart.subscribeCrosshairMove(handleMainCrosshairMove);
+        rsiChart.subscribeCrosshairMove(handleRSICrosshairMove);
+
+        syncUnsubscribersRef.current.push(() => {
+          mainTimeScale.unsubscribeVisibleLogicalRangeChange(handleMainVisibleRangeChange);
+          rsiTimeScale.unsubscribeVisibleLogicalRangeChange(handleRSIVisibleRangeChange);
+          mainChart.unsubscribeCrosshairMove(handleMainCrosshairMove);
+          rsiChart.unsubscribeCrosshairMove(handleRSICrosshairMove);
+        });
+      }
+
+      if (rsiSeriesRef.current && data.length) {
+        const rsiData = calculateRSI(data, 14);
+        rsiSeriesRef.current.setData(rsiData);
+      }
+    } else {
+      // Cleanup RSI chart and sync listeners
+      if (rsiChartRef.current) {
+        rsiChartRef.current.remove();
+        rsiChartRef.current = null;
+        rsiSeriesRef.current = null;
+      }
+      syncUnsubscribersRef.current.forEach(unsub => unsub());
+      syncUnsubscribersRef.current = [];
     }
   }, [data, indicators]);
 
@@ -307,8 +457,17 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
   }, [activeTool, onDraw]);
 
   return (
-    <div className="w-full h-full p-2 bg-gray-950 select-none">
-      <div ref={containerRef} className="w-full h-full" />
+    <div className="w-full h-full p-2 bg-gray-950 select-none flex flex-col gap-2">
+      <div
+        ref={containerRef}
+        className={`w-full transition-all duration-200 ${indicators?.rsi ? 'h-[70%]' : 'h-full'}`}
+      />
+      {indicators?.rsi && (
+        <div
+          ref={rsiContainerRef}
+          className="w-full h-[30%] border-t border-gray-800 pt-2"
+        />
+      )}
     </div>
   );
 };

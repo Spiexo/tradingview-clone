@@ -41,7 +41,7 @@ const App: React.FC = () => {
   const [indicators] = useState<IndicatorsState>({
     ma20: true,
     ma50: true,
-    rsi: false,
+    rsi: true,
     macd: false,
     bb: false,
   });
