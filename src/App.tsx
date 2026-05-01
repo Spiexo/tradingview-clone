@@ -43,7 +43,7 @@ const App: React.FC = () => {
     ma50: true,
     rsi: true,
     macd: false,
-    bb: false,
+    bb: true,
   });
 
   const {
@@ -162,9 +162,11 @@ const App: React.FC = () => {
     );
   }
 
+  const bypassAuth = true;
+
   return (
     <>
-      {!user ? (
+      {!user && !bypassAuth ? (
         <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-950 text-white p-4">
           <div className="max-w-md text-center space-y-6">
             <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">

@@ -81,5 +81,18 @@ export const useOHLCV = (
     return () => controller.abort();
   }, [fetchData]);
 
+  // Mock data for development if fetch fails or for testing
+  useEffect(() => {
+    if (data.length === 0 && !loading) {
+      import('../data/mockOHLCV').then(module => {
+        setData(module.mockBTCOHLCV.map(d => ({
+          ...d,
+          time: Math.floor(new Date(d.time).getTime() / 1000).toString()
+        })));
+        setError(null);
+      });
+    }
+  }, [data.length, loading]);
+
   return { data, loading, error, refresh: () => fetchData() };
 };

@@ -174,6 +174,6 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 - [x] Implémenter Moving Average (MA20, MA50) en overlay sur le graphique principal (LineSeries)
 - [x] Implémenter RSI(14) dans un panneau séparé sous le graphique principal
 - [x] Implémenter MACD dans un troisième panneau optionnel (toggle on/off)
-- [ ] Implémenter Bollinger Bands (20, 2) en overlay sur le graphique principal
+- [x] Implémenter Bollinger Bands (20, 2) en overlay sur le graphique principal
 - [ ] Permettre d'activer/désactiver chaque indicateur depuis ChartToolbar
 - [ ] Validation étape 12 : tous les timeframes fonctionnels, MA20 + RSI affichés par défaut, build sans erreur
