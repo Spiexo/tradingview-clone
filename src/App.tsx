@@ -38,13 +38,20 @@ const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTool, setActiveTool] = useState<DrawingTool>('cursor');
   const [activePanel, setActivePanel] = useState<RightPanelType>('watchlist');
-  const [indicators] = useState<IndicatorsState>({
+  const [indicators, setIndicators] = useState<IndicatorsState>({
     ma20: true,
     ma50: true,
     rsi: true,
     macd: false,
     bb: true,
   });
+
+  const handleToggleIndicator = (key: keyof IndicatorsState) => {
+    setIndicators((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   const {
     drawings,
@@ -225,6 +232,8 @@ const App: React.FC = () => {
             activeTimeframe={activeTimeframe}
             onTimeframeChange={setActiveTimeframe}
             isLoading={chartLoading}
+            indicators={indicators}
+            onToggleIndicator={handleToggleIndicator}
           />
           <div className="flex-1 flex overflow-hidden">
             <DrawingToolbar
