@@ -10,9 +10,10 @@ import type {
   MouseEventParams,
   Time,
   SeriesDataItemTypeMap,
+  LogicalRange,
 } from 'lightweight-charts';
 import type { OHLCVData, Drawing, DrawingTool, IndicatorsState } from '../../types';
-import { calculateSMA, calculateRSI } from '../../utils/indicators';
+import { calculateSMA, calculateRSI, calculateMACD } from '../../utils/indicators';
 
 interface CandlestickChartProps {
   data: OHLCVData[];
@@ -42,6 +43,13 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
   const rsiContainerRef = useRef<HTMLDivElement>(null);
   const rsiChartRef = useRef<IChartApi | null>(null);
   const rsiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
+  // MACD Chart Refs
+  const macdContainerRef = useRef<HTMLDivElement>(null);
+  const macdChartRef = useRef<IChartApi | null>(null);
+  const macdLineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const signalLineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const histogramSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
 
   // Sync Unsubscribe Refs
   const syncUnsubscribersRef = useRef<(() => void)[]>([]);
@@ -116,6 +124,12 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
           height: rsiContainerRef.current.clientHeight,
         });
       }
+      if (macdContainerRef.current && macdChartRef.current) {
+        macdChartRef.current.applyOptions({
+          width: macdContainerRef.current.clientWidth,
+          height: macdContainerRef.current.clientHeight,
+        });
+      }
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
@@ -141,6 +155,10 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
       if (rsiChartRef.current) {
         rsiChartRef.current.remove();
         rsiChartRef.current = null;
+      }
+      if (macdChartRef.current) {
+        macdChartRef.current.remove();
+        macdChartRef.current = null;
       }
       chart.remove();
     };
@@ -295,48 +313,6 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
 
         rsiChartRef.current = rsiChart;
         rsiSeriesRef.current = rsiSeries;
-
-        // Sync logic
-        const mainChart = chartRef.current;
-        const mainTimeScale = mainChart.timeScale();
-        const rsiTimeScale = rsiChart.timeScale();
-
-        const handleMainVisibleRangeChange = (range: any) => {
-          if (range) rsiTimeScale.setVisibleLogicalRange(range);
-        };
-        const handleRSIVisibleRangeChange = (range: any) => {
-          if (range) mainTimeScale.setVisibleLogicalRange(range);
-        };
-        const handleMainCrosshairMove = (param: any) => {
-          if (rsiChartRef.current && rsiSeriesRef.current) {
-            if (param.time) {
-              rsiChartRef.current.setCrosshairPosition(0, param.time, rsiSeriesRef.current);
-            } else {
-              rsiChartRef.current.clearCrosshairPosition();
-            }
-          }
-        };
-        const handleRSICrosshairMove = (param: any) => {
-          if (chartRef.current && candlestickSeriesRef.current) {
-            if (param.time) {
-              chartRef.current.setCrosshairPosition(0, param.time, candlestickSeriesRef.current);
-            } else {
-              chartRef.current.clearCrosshairPosition();
-            }
-          }
-        };
-
-        mainTimeScale.subscribeVisibleLogicalRangeChange(handleMainVisibleRangeChange);
-        rsiTimeScale.subscribeVisibleLogicalRangeChange(handleRSIVisibleRangeChange);
-        mainChart.subscribeCrosshairMove(handleMainCrosshairMove);
-        rsiChart.subscribeCrosshairMove(handleRSICrosshairMove);
-
-        syncUnsubscribersRef.current.push(() => {
-          mainTimeScale.unsubscribeVisibleLogicalRangeChange(handleMainVisibleRangeChange);
-          rsiTimeScale.unsubscribeVisibleLogicalRangeChange(handleRSIVisibleRangeChange);
-          mainChart.unsubscribeCrosshairMove(handleMainCrosshairMove);
-          rsiChart.unsubscribeCrosshairMove(handleRSICrosshairMove);
-        });
       }
 
       if (rsiSeriesRef.current && data.length) {
@@ -344,15 +320,139 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
         rsiSeriesRef.current.setData(rsiData);
       }
     } else {
-      // Cleanup RSI chart and sync listeners
       if (rsiChartRef.current) {
         rsiChartRef.current.remove();
         rsiChartRef.current = null;
         rsiSeriesRef.current = null;
       }
-      syncUnsubscribersRef.current.forEach(unsub => unsub());
-      syncUnsubscribersRef.current = [];
     }
+
+    // Handle MACD
+    if (indicators?.macd) {
+      if (!macdChartRef.current && macdContainerRef.current) {
+        const macdChart = createChart(macdContainerRef.current, {
+          layout: {
+            background: { type: ColorType.Solid, color: '#030712' },
+            textColor: '#9ca3af',
+          },
+          grid: {
+            vertLines: { color: '#1f2937' },
+            horzLines: { color: '#1f2937' },
+          },
+          width: macdContainerRef.current.clientWidth,
+          height: macdContainerRef.current.clientHeight,
+          timeScale: {
+            borderColor: '#1f2937',
+            timeVisible: true,
+            secondsVisible: false,
+          },
+          rightPriceScale: {
+            borderColor: '#1f2937',
+          },
+          crosshair: {
+            mode: 0,
+            vertLine: {
+              color: '#374151',
+              width: 1,
+              style: LineStyle.Dashed,
+              labelBackgroundColor: '#1f2937',
+            },
+            horzLine: {
+              color: '#374151',
+              width: 1,
+              style: LineStyle.Dashed,
+              labelBackgroundColor: '#1f2937',
+            },
+          },
+        });
+
+        const histogramSeries = macdChart.addHistogramSeries({
+          color: '#4ade80',
+          priceFormat: { type: 'volume' },
+          priceScaleId: 'right',
+          title: 'Histogram',
+        });
+
+        const macdLineSeries = macdChart.addLineSeries({
+          color: '#3b82f6', // blue-500
+          lineWidth: 2,
+          title: 'MACD',
+        });
+
+        const signalLineSeries = macdChart.addLineSeries({
+          color: '#fbbf24', // amber-400
+          lineWidth: 2,
+          title: 'Signal',
+        });
+
+        macdChartRef.current = macdChart;
+        histogramSeriesRef.current = histogramSeries;
+        macdLineSeriesRef.current = macdLineSeries;
+        signalLineSeriesRef.current = signalLineSeries;
+      }
+
+      if (macdLineSeriesRef.current && signalLineSeriesRef.current && histogramSeriesRef.current && data.length) {
+        const { macdLine, signalLine, histogram } = calculateMACD(data);
+        macdLineSeriesRef.current.setData(macdLine);
+        signalLineSeriesRef.current.setData(signalLine);
+        histogramSeriesRef.current.setData(histogram);
+      }
+    } else {
+      if (macdChartRef.current) {
+        macdChartRef.current.remove();
+        macdChartRef.current = null;
+        macdLineSeriesRef.current = null;
+        signalLineSeriesRef.current = null;
+        histogramSeriesRef.current = null;
+      }
+    }
+
+    // Sync all charts
+    const charts = [
+      { chart: chartRef.current, series: candlestickSeriesRef.current },
+      { chart: rsiChartRef.current, series: rsiSeriesRef.current },
+      { chart: macdChartRef.current, series: macdLineSeriesRef.current },
+    ].filter(c => c.chart !== null);
+
+    // Clear previous syncs
+    syncUnsubscribersRef.current.forEach(unsub => unsub());
+    syncUnsubscribersRef.current = [];
+
+    if (charts.length > 1) {
+      charts.forEach(({ chart: currentChart }, index) => {
+        const otherCharts = charts.filter((_, i) => i !== index);
+
+        // Sync Time Scale
+        const handleVisibleLogicalRangeChange = (range: LogicalRange | null) => {
+          if (range) {
+            otherCharts.forEach(({ chart: otherChart }) => {
+              otherChart?.timeScale().setVisibleLogicalRange(range);
+            });
+          }
+        };
+        currentChart?.timeScale().subscribeVisibleLogicalRangeChange(handleVisibleLogicalRangeChange);
+        syncUnsubscribersRef.current.push(() => currentChart?.timeScale().unsubscribeVisibleLogicalRangeChange(handleVisibleLogicalRangeChange));
+
+        // Sync Crosshair
+        const handleCrosshairMove = (param: MouseEventParams) => {
+          const time = param.time;
+          if (time) {
+            otherCharts.forEach(({ chart: otherChart, series: otherSeries }) => {
+              if (otherChart && otherSeries) {
+                otherChart.setCrosshairPosition(0, time, otherSeries);
+              }
+            });
+          } else {
+            otherCharts.forEach(({ chart: otherChart }) => {
+              otherChart?.clearCrosshairPosition();
+            });
+          }
+        };
+        currentChart?.subscribeCrosshairMove(handleCrosshairMove);
+        syncUnsubscribersRef.current.push(() => currentChart?.unsubscribeCrosshairMove(handleCrosshairMove));
+      });
+    }
+
   }, [data, indicators]);
 
   // Update drawings
@@ -456,16 +556,34 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
     };
   }, [activeTool, onDraw]);
 
+  const getChartHeights = () => {
+    const hasRsi = !!indicators?.rsi;
+    const hasMacd = !!indicators?.macd;
+
+    if (hasRsi && hasMacd) return { main: 'h-[60%]', rsi: 'h-[20%]', macd: 'h-[20%]' };
+    if (hasRsi) return { main: 'h-[70%]', rsi: 'h-[30%]', macd: 'h-0' };
+    if (hasMacd) return { main: 'h-[70%]', rsi: 'h-0', macd: 'h-[30%]' };
+    return { main: 'h-full', rsi: 'h-0', macd: 'h-0' };
+  };
+
+  const heights = getChartHeights();
+
   return (
     <div className="w-full h-full p-2 bg-gray-950 select-none flex flex-col gap-2">
       <div
         ref={containerRef}
-        className={`w-full transition-all duration-200 ${indicators?.rsi ? 'h-[70%]' : 'h-full'}`}
+        className={`w-full transition-all duration-200 ${heights.main}`}
       />
       {indicators?.rsi && (
         <div
           ref={rsiContainerRef}
-          className="w-full h-[30%] border-t border-gray-800 pt-2"
+          className={`w-full ${heights.rsi} border-t border-gray-800 pt-2`}
+        />
+      )}
+      {indicators?.macd && (
+        <div
+          ref={macdContainerRef}
+          className={`w-full ${heights.macd} border-t border-gray-800 pt-2`}
         />
       )}
     </div>
