@@ -175,5 +175,6 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 - [x] Implémenter RSI(14) dans un panneau séparé sous le graphique principal
 - [x] Implémenter MACD dans un troisième panneau optionnel (toggle on/off)
 - [x] Implémenter Bollinger Bands (20, 2) en overlay sur le graphique principal
-- [ ] Permettre d'activer/désactiver chaque indicateur depuis ChartToolbar
-- [ ] Validation étape 12 : tous les timeframes fonctionnels, MA20 + RSI affichés par défaut, build sans erreur
+- [x] Permettre d'activer/désactiver chaque indicateur depuis ChartToolbar
+- [x] Validation étape 12 : tous les timeframes fonctionnels, MA20 + RSI affichés par défaut, build sans erreur
+      <!-- Validation report: Indicators can be toggled via the new dropdown in ChartToolbar. MA20 and RSI are active by default. All timeframes successfully trigger a data refresh from the active provider (Binance/Polygon). Build and type-check passed. -->
