@@ -13,7 +13,7 @@ import type {
   LogicalRange,
 } from 'lightweight-charts';
 import type { OHLCVData, Drawing, DrawingTool, IndicatorsState } from '../../types';
-import { calculateSMA, calculateRSI, calculateMACD } from '../../utils/indicators';
+import { calculateSMA, calculateRSI, calculateMACD, calculateBollingerBands } from '../../utils/indicators';
 
 interface CandlestickChartProps {
   data: OHLCVData[];
@@ -38,6 +38,10 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
 
   const ma20SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const ma50SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
+  const bbUpperSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const bbMiddleSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const bbLowerSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
   // RSI Chart Refs
   const rsiContainerRef = useRef<HTMLDivElement>(null);
@@ -238,6 +242,56 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
     } else if (ma50SeriesRef.current) {
       chartRef.current.removeSeries(ma50SeriesRef.current);
       ma50SeriesRef.current = null;
+    }
+
+    // Handle Bollinger Bands
+    if (indicators?.bb) {
+      if (!bbUpperSeriesRef.current) {
+        bbUpperSeriesRef.current = chartRef.current.addLineSeries({
+          color: 'rgba(96, 165, 250, 0.5)', // blue-400 with opacity
+          lineWidth: 1,
+          lastValueVisible: false,
+          priceLineVisible: false,
+          title: 'BB Upper',
+        });
+      }
+      if (!bbMiddleSeriesRef.current) {
+        bbMiddleSeriesRef.current = chartRef.current.addLineSeries({
+          color: 'rgba(96, 165, 250, 0.8)', // blue-400
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          lastValueVisible: false,
+          priceLineVisible: false,
+          title: 'BB Middle',
+        });
+      }
+      if (!bbLowerSeriesRef.current) {
+        bbLowerSeriesRef.current = chartRef.current.addLineSeries({
+          color: 'rgba(96, 165, 250, 0.5)', // blue-400 with opacity
+          lineWidth: 1,
+          lastValueVisible: false,
+          priceLineVisible: false,
+          title: 'BB Lower',
+        });
+      }
+
+      const { upperBand, middleBand, lowerBand } = calculateBollingerBands(data, 20, 2);
+      bbUpperSeriesRef.current.setData(upperBand);
+      bbMiddleSeriesRef.current.setData(middleBand);
+      bbLowerSeriesRef.current.setData(lowerBand);
+    } else {
+      if (bbUpperSeriesRef.current) {
+        chartRef.current.removeSeries(bbUpperSeriesRef.current);
+        bbUpperSeriesRef.current = null;
+      }
+      if (bbMiddleSeriesRef.current) {
+        chartRef.current.removeSeries(bbMiddleSeriesRef.current);
+        bbMiddleSeriesRef.current = null;
+      }
+      if (bbLowerSeriesRef.current) {
+        chartRef.current.removeSeries(bbLowerSeriesRef.current);
+        bbLowerSeriesRef.current = null;
+      }
     }
 
     // Handle RSI
