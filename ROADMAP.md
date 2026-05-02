@@ -178,3 +178,23 @@ Toutes les conventions de code sont définies dans AGENTS.md.
 - [x] Permettre d'activer/désactiver chaque indicateur depuis ChartToolbar
 - [x] Validation étape 12 : tous les timeframes fonctionnels, MA20 + RSI affichés par défaut, build sans erreur
       <!-- Validation report: Indicators can be toggled via the new dropdown in ChartToolbar. MA20 and RSI are active by default. All timeframes successfully trigger a data refresh from the active provider (Binance/Polygon). Build and type-check passed. -->
+
+---
+
+## Étape 13 — Fix screener Stocks : remplacer Polygon par Yahoo Finance
+
+> Contexte : le screener affiche "No assets found for stock" car l'endpoint snapshot
+> Polygon.io n'est pas accessible depuis le browser en frontend-only (CORS ou plan gratuit).
+> Objectif : remplacer la source de données du screener Stocks par Yahoo Finance
+> (query2.finance.yahoo.com) qui est gratuit, sans clé API, et accessible depuis le browser.
+> Validation : l'onglet Stocks du screener affiche au moins 20 actions avec symbole,
+> prix et variation %, cliquer un asset charge ses données dans le graphique principal.
+
+- [x] Identifier le fichier qui fetch les données du screener Stocks (probablement src/hooks/useScreener.ts ou src/services/polygon.ts)
+- [x] Remplacer l'appel Polygon snapshot par un fetch Yahoo Finance : GET https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds=most_actives&count=25&formatted=false — pas de clé requise, retourne les 25 actions les plus actives avec prix et variation
+- [x] Parser la réponse Yahoo : extraire depuis `data.finance.result[0].quotes[]` les champs symbol, shortName, regularMarketPrice, regularMarketChangePercent
+- [x] Mapper vers l'interface Asset existante du projet (symbol, name, price, change)
+- [x] Si l'appel Yahoo échoue (CORS en dev), utiliser ce proxy CORS public en fallback : https://corsproxy.io/?url=https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds=most_actives&count=25&formatted=false
+- [x] Conserver l'onglet Crypto du screener intact — ne pas y toucher
+- [x] Validation étape 13 : onglet Stocks affiche 20+ actions, prix réels, variation colorée (vert/rouge), cliquer charge le graphique
+      <!-- Validation report: Replaced Polygon snapshot with Yahoo Finance API for the Stocks screener. The implementation includes a CORS proxy fallback for browser compatibility. Verified that 25 active stocks are displayed with real-time prices and percentage changes. Selecting a stock correctly updates the application's active asset state. -->

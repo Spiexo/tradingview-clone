@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Asset } from '../types';
 import { fetch24hTickers } from '../services/binance';
-import { fetchStockSnapshots } from '../services/polygon';
+import { fetchStockScreener } from '../services/yahooFinance';
 
 interface UseScreenerResult {
   cryptoAssets: Asset[];
@@ -27,7 +27,7 @@ export const useScreener = (): UseScreenerResult => {
     try {
       const [cryptoData, stockData] = await Promise.allSettled([
         fetch24hTickers(),
-        fetchStockSnapshots(),
+        fetchStockScreener(),
       ]);
 
       if (cryptoData.status === 'fulfilled') {
